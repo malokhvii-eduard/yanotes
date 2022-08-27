@@ -41,6 +41,19 @@ bcrypt = ["bcrypt"]
 argon2 = ["argon2-cffi (>=19.1.0)"]
 
 [[package]]
+name = "django-environ"
+version = "0.9.0"
+description = "A package that allows you to utilize 12factor inspired environment variables to configure your Django application."
+category = "main"
+optional = false
+python-versions = ">=3.4,<4"
+
+[package.extras]
+testing = ["pytest (>=4.6.11)", "coverage[toml] (>=5.0a4)"]
+docs = ["sphinx-notfound-page", "sphinx (>=3.5.0)", "furo (>=2021.8.17b43,<2021.9.0)"]
+develop = ["sphinx-notfound-page", "sphinx (>=3.5.0)", "furo (>=2021.8.17b43,<2021.9.0)", "pytest (>=4.6.11)", "coverage[toml] (>=5.0a4)"]
+
+[[package]]
 name = "djangorestframework"
 version = "3.13.1"
 description = "Web APIs for Django, made easy."
@@ -155,12 +168,13 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.10"
-content-hash = "34e1a65bccb10de6f5bc7f7a1a48eb0607915d95c2d250d7c363d4dca5b85e95"
+content-hash = "5af6e3eb30103e5a69fe03404e3d0b2862dc271e061ec7c6b1c974d3e5100413"
 
 [metadata.files]
 asgiref = []
 attrs = []
 django = []
+django-environ = []
 djangorestframework = []
 drf-spectacular = []
 inflection = []
