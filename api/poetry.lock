@@ -138,6 +138,7 @@ python-versions = ">=3.6"
 [package.dependencies]
 Django = ">=2.2"
 djangorestframework = ">=3.10"
+drf-spectacular-sidecar = {version = "*", optional = true, markers = "extra == \"sidecar\""}
 inflection = ">=0.3.1"
 jsonschema = ">=2.6.0"
 PyYAML = ">=5.1"
@@ -146,6 +147,17 @@ uritemplate = ">=2.0.0"
 [package.extras]
 offline = ["drf-spectacular-sidecar"]
 sidecar = ["drf-spectacular-sidecar"]
+
+[[package]]
+name = "drf-spectacular-sidecar"
+version = "2022.8.1"
+description = "Serve self-contained distribution builds of Swagger UI and Redoc with Django"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+Django = ">=2.2"
 
 [[package]]
 name = "inflection"
@@ -263,7 +275,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.10"
-content-hash = "72a7ca130ae6993cad3b86a0b4e8d413d708bdf7ed0fba72577b3ac3039d860e"
+content-hash = "5603d1b5511c2aa0d67ddc0dec6ee4edb25ce7684451bfbdc31afc7dfcd96efb"
 
 [metadata.files]
 asgiref = []
@@ -278,6 +290,7 @@ django-ipware = []
 django-structlog = []
 djangorestframework = []
 drf-spectacular = []
+drf-spectacular-sidecar = []
 inflection = []
 jsonschema = []
 pillow = []
