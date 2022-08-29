@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "colorfield",
     # Project applications
+    "yanotes.users",
 ]
 
 # Middleware
@@ -178,7 +179,8 @@ LOGGING = {
         }
     },
     "loggers": {
-        "": {
+        "": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "yanotes": {
             "handlers": ["console"],
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
