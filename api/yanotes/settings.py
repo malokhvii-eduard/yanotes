@@ -151,15 +151,39 @@ REST_FRAMEWORK = {
 # Django REST Framework Spectacular
 # https://drf-spectacular.readthedocs.io/en/latest/
 SPECTACULAR_SETTINGS = {
-    "TITLE": "YaNotes",
-    "VERSION": "1.0.0",
-    "CONTACT": {"email": "malokhvii.ee@gmail.com"},
-    "TAGS": [{"name": "users", "description": "Manage users"}],
     "SCHEMA_PATH_PREFIX": r"/api",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
+    "TITLE": "YaNotes",
+    "DESCRIPTION": (
+        "YaNotes API is an HTTP API for simple note-taking app. It is used by the"
+        " YaNotes UI and everything you can do with the UI can be done using the"
+        " HTTP API.\n\n"
+        "### Security\n\n"
+        "Each API endpoint has an associated access policy, it is documented in the"
+        " description of each endpoint. Different access policies are available:\n\n"
+        "* Public access\n"
+        "* Restricted access\n"
+        "* Administrator access\n"
+        "#### Public access\n\n"
+        "No authentication is required to access the endpoints with this access"
+        " policy.\n\n"
+        "#### Restricted access\n\n"
+        "Authentication is required to access the endpoints with this access policy."
+        " Extra-checks might be added to ensure access to the resource is granted."
+        " Returned data might also be filtered.\n\n"
+        "#### Administrator access\n\n"
+        "Authentication as well as an administrator role are required to access the"
+        " endpoints with this access policy."
+    ),
+    "CONTACT": {
+        "url": "https://malokhvii-eduard.github.io/",
+        "email": "malokhvii.ee@gmail.com",
+    },
+    "VERSION": "1.0.0",
+    "TAGS": [{"name": "users", "description": "Manage users"}],
 }
 
 # Logging
