@@ -1,0 +1,111 @@
+from django.contrib.auth import get_user_model
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+
+from ..common.serializers import ErrorSerializer
+from .permissions import IsUser
+from .serializers import UserSerializer
+
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List users",
+        description=(
+            "List users. Only administrators can list user accounts.\n\n"
+            "**Access policy**: Administrator"
+        ),
+        responses={
+            200: OpenApiResponse(UserSerializer, description="Success"),
+            403: OpenApiResponse(ErrorSerializer, description="Forbidden"),
+            500: OpenApiResponse(ErrorSerializer, description="Server error"),
+        },
+    ),
+    create=extend_schema(
+        summary="Create a new user",
+        description=(
+            "Create a new user. Anyone can create a non-administrator user. Only"
+            " administrators can create an administrator user account via the"
+            " admin panel.\n\n"
+            "**Access policy**: Public"
+        ),
+        auth=[],
+        responses={
+            201: OpenApiResponse(UserSerializer, description="Success"),
+            400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            500: OpenApiResponse(ErrorSerializer, description="Server error"),
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Inspect a user",
+        description="Retrieve details about a user.\n\n**Access policy**: Restricted",
+        responses={
+            200: OpenApiResponse(UserSerializer, description="Success"),
+            404: OpenApiResponse(ErrorSerializer, description="User not found"),
+            500: OpenApiResponse(ErrorSerializer, description="Server error"),
+        },
+    ),
+    update=extend_schema(
+        summary="Update a user",
+        description=(
+            "Update user details. A regular user account can only update his"
+            " details.\n\n"
+            "**Access policy**: Restricted"
+        ),
+        responses={
+            200: OpenApiResponse(UserSerializer, description="Success"),
+            400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            404: OpenApiResponse(ErrorSerializer, description="User not found"),
+            500: OpenApiResponse(ErrorSerializer, description="Server error"),
+        },
+    ),
+    partial_update=extend_schema(
+        summary="Partial update a user",
+        description=(
+            "Partial update user details. A regular user account can only update his"
+            " details.\n\n"
+            "**Access policy**: Restricted"
+        ),
+        responses={
+            200: OpenApiResponse(UserSerializer, description="Success"),
+            400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            404: OpenApiResponse(ErrorSerializer, description="User not found"),
+            500: OpenApiResponse(ErrorSerializer, description="Server error"),
+        },
+    ),
+    destroy=extend_schema(
+        summary="Remove a user",
+        description=(
+            "Remove a user. A regular user account can only remove his"
+            " details and other related resources.\n\n"
+            "**Access policy**: Restricted"
+        ),
+        responses={
+            204: OpenApiResponse(None, description="Success"),
+            404: OpenApiResponse(ErrorSerializer, description="User not found"),
+            500: OpenApiResponse(ErrorSerializer, description="Server error"),
+        },
+    ),
+)
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        User = get_user_model()  # noqa
+        if self.request.user.is_staff:
+            return User.objects.all()
+
+        return User.objects.filter(pk=self.request.user.id)
+
+    def get_permission_classes(self):
+        match self.action:
+            case "create":
+                return [AllowAny]
+            case "list":
+                return [IsAuthenticated, IsAdminUser]
+            case _:
+                return [IsAuthenticated, IsUser | IsAdminUser]
+
+    def get_permissions(self):
+        self.permission_classes = self.get_permission_classes()
+        return super().get_permissions()
