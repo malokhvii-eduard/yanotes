@@ -1,4 +1,4 @@
-"""Django settings for yanotes project.
+"""Django settings for notes project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/4.1/topics/settings/
@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "colorfield",
     # Project applications
     "yanotes.users",
+    "yanotes.notes",
 ]
 
 # Middleware
@@ -183,7 +184,10 @@ SPECTACULAR_SETTINGS = {
         "email": "malokhvii.ee@gmail.com",
     },
     "VERSION": "1.0.0",
-    "TAGS": [{"name": "users", "description": "Manage users"}],
+    "TAGS": [
+        {"name": "users", "description": "Manage users"},
+        {"name": "notes", "description": "Manage notes"},
+    ],
 }
 
 # Logging
