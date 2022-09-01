@@ -40,6 +40,7 @@ urlpatterns = [
         name="redoc",
     ),
     path("api/", include("rest_framework.urls", namespace="rest_framework")),
+    path("api/", include("yanotes.auth.urls")),
     path("api/", include("yanotes.users.urls")),
     path("api/", include("yanotes.notes.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
