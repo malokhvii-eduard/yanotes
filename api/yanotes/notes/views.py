@@ -20,6 +20,7 @@ from .serializers import NoteSerializer
         ),
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
     ),
@@ -32,6 +33,7 @@ from .serializers import NoteSerializer
         responses={
             201: OpenApiResponse(NoteSerializer, description="Success"),
             400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
     ),
@@ -44,6 +46,7 @@ from .serializers import NoteSerializer
         ),
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="Note not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
@@ -58,6 +61,7 @@ from .serializers import NoteSerializer
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
             400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             403: OpenApiResponse(ErrorSerializer, description="Forbidden"),
             404: OpenApiResponse(ErrorSerializer, description="Note not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
@@ -73,6 +77,7 @@ from .serializers import NoteSerializer
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
             400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             403: OpenApiResponse(ErrorSerializer, description="Forbidden"),
             404: OpenApiResponse(ErrorSerializer, description="Note not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
@@ -86,6 +91,7 @@ from .serializers import NoteSerializer
         ),
         responses={
             204: OpenApiResponse(None, description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="Note not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },

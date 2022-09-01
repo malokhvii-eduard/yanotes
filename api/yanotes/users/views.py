@@ -22,6 +22,7 @@ from .serializers import UserSerializer
         ),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             403: OpenApiResponse(ErrorSerializer, description="Forbidden"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
@@ -48,6 +49,7 @@ from .serializers import UserSerializer
         ),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
@@ -62,6 +64,7 @@ from .serializers import UserSerializer
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
             400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
@@ -76,6 +79,7 @@ from .serializers import UserSerializer
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
             400: OpenApiResponse(ErrorSerializer, description="Invalid request"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
@@ -89,6 +93,7 @@ from .serializers import UserSerializer
         ),
         responses={
             204: OpenApiResponse(None, description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
@@ -99,6 +104,7 @@ from .serializers import UserSerializer
         description="Inspect a user notes.\n\n**Access policy**: Authenticated",
         responses={
             200: OpenApiResponse(NoteSerializer(many=True), description="Success"),
+            401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),
             500: OpenApiResponse(ErrorSerializer, description="Server error"),
         },
