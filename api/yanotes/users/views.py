@@ -43,7 +43,9 @@ from .serializers import UserSerializer
     ),
     retrieve=extend_schema(
         summary="Inspect a user",
-        description="Retrieve details about a user.\n\n**Access policy**: Restricted",
+        description=(
+            "Retrieve details about a user.\n\n**Access policy**: Authenticated"
+        ),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),
@@ -55,7 +57,7 @@ from .serializers import UserSerializer
         description=(
             "Update user details. A regular user account can only update his"
             " details.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
@@ -69,7 +71,7 @@ from .serializers import UserSerializer
         description=(
             "Partial update user details. A regular user account can only update his"
             " details.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
@@ -83,7 +85,7 @@ from .serializers import UserSerializer
         description=(
             "Remove a user. A regular user account can only remove his"
             " details and other related resources.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             204: OpenApiResponse(None, description="Success"),
@@ -94,7 +96,7 @@ from .serializers import UserSerializer
     list_notes=extend_schema(
         operation_id="users_notes_list",
         summary="Inspect a user notes",
-        description="Inspect a user notes.\n\n**Access policy**: Restricted",
+        description="Inspect a user notes.\n\n**Access policy**: Authenticated",
         responses={
             200: OpenApiResponse(NoteSerializer(many=True), description="Success"),
             404: OpenApiResponse(ErrorSerializer, description="User not found"),

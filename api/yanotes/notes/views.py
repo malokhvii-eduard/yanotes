@@ -16,7 +16,7 @@ from .serializers import NoteSerializer
             "List notes. List all notes based on the current user authorizations."
             " Will return all notes if using an administrator account otherwise"
             " it will only return authorized notes.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
@@ -27,7 +27,7 @@ from .serializers import NoteSerializer
         summary="Create a new note",
         description=(
             "Create a new note. A regular user account can only create his notes.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             201: OpenApiResponse(NoteSerializer, description="Success"),
@@ -40,7 +40,7 @@ from .serializers import NoteSerializer
         description=(
             "Retrieve details about a note. A regular user account can only inspect"
             " his notes.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
@@ -53,7 +53,7 @@ from .serializers import NoteSerializer
         description=(
             "Update a note. A regular user account can only update his notes."
             " Only administrators can change note ownership.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
@@ -68,7 +68,7 @@ from .serializers import NoteSerializer
         description=(
             "Partial update a note. A regular user account can only partial update his"
             " notes. Only administrators can change note ownership.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
@@ -82,7 +82,7 @@ from .serializers import NoteSerializer
         summary="Remove a note",
         description=(
             "Remove a note. A regular user account can only remove his notes.\n\n"
-            "**Access policy**: Restricted"
+            "**Access policy**: Authenticated"
         ),
         responses={
             204: OpenApiResponse(None, description="Success"),
