@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "colorfield",
     # Project applications
-    "yanotes.users",
     "yanotes.notes",
 ]
 
