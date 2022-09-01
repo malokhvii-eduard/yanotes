@@ -184,6 +184,7 @@ SPECTACULAR_SETTINGS = {
     },
     "VERSION": "1.0.0",
     "TAGS": [
+        {"name": "auth", "description": "Authenticate and manage tokens"},
         {"name": "users", "description": "Manage users"},
         {"name": "notes", "description": "Manage notes"},
     ],
