@@ -160,6 +160,20 @@ SPECTACULAR_SETTINGS = {
         "YaNotes API is an HTTP API for simple note-taking app. It is used by the"
         " YaNotes UI and everything you can do with the UI can be done using the"
         " HTTP API.\n\n"
+        "### Authentication\n\n"
+        "Most of the API endpoints require to be authenticated as well as some level"
+        " of authorization to be used. YaNotes API uses JSON Web Token to manage"
+        " authentication and thus requires you to provide a token in the"
+        " **Authorization** header of each request with the **Bearer** authentication"
+        " mechanism.\n\n"
+        "Example:\n\n"
+        "```Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"  # pragma: allowlist secret
+        ".eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYyM"  # pragma: allowlist secret
+        "DY0NzcyLCJpYXQiOjE2NjIwNjQ0NzIsImp0aSI6ImNjNDY"  # pragma: allowlist secret
+        "wYmFjNjgwOTQzNTZhY2M4ZGVlOGRlZWEwZmM0IiwidXNlc"  # pragma: allowlist secret
+        "l9pZCI6MX0.c8DWTZsLtMpvIqaONSnR0CPQdB5UgCiHuIy"  # pragma: allowlist secret
+        "PAxcRiMY"  # pragma: allowlist secret
+        "```\n\n"
         "### Security\n\n"
         "Each API endpoint has an associated access policy, it is documented in the"
         " description of each endpoint. Different access policies are available:\n\n"
