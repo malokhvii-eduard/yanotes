@@ -1,5 +1,5 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework import viewsets
+from rest_framework import filters, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
@@ -100,6 +100,8 @@ from .serializers import NoteSerializer
 class NoteViewSet(viewsets.ModelViewSet):
     serializer_class = NoteSerializer
     permission_classes = [IsAuthenticated, IsOwner | IsAdminUser]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["title", "updated_at"]
 
     def get_queryset(self):
         if self.request.user.is_staff:
