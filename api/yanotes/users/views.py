@@ -1,10 +1,16 @@
 from django.contrib.auth import get_user_model
-from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    OpenApiTypes,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-from rest_framework.response import Response
+from rest_framework.serializers import api_settings
 
 from ..common.serializers import ErrorSerializer
 from ..notes.models import Note
@@ -102,6 +108,20 @@ from .serializers import UserSerializer
         operation_id="users_notes_list",
         summary="Inspect a user notes",
         description="Inspect a user notes.\n\n**Access policy**: Authenticated",
+        parameters=[
+            OpenApiParameter(
+                "limit",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description="Number of results to return per page.",
+            ),
+            OpenApiParameter(
+                "offset",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description="The initial index from which to return the results.",
+            ),
+        ],
         responses={
             200: OpenApiResponse(NoteSerializer(many=True), description="Success"),
             401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
@@ -138,7 +158,12 @@ class UserViewSet(viewsets.ModelViewSet):
         self.permission_classes = self.get_permission_classes()
         return super().get_permissions()
 
-    @action(detail=True, methods=["get"], url_path="notes")
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="notes",
+        pagination_class=api_settings.DEFAULT_PAGINATION_CLASS,
+    )
     def list_notes(self, *args, pk, **kwargs):
         is_this_user = pk == str(self.request.user.id)
 
@@ -152,5 +177,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 raise NotFound()
 
         notes = Note.objects.filter(owner_id=pk)
-        serializer = self.get_serializer(notes, many=True)
-        return Response(serializer.data)
+        page = self.paginate_queryset(notes)
+        serializer = self.get_serializer(page if page else notes, many=True)
+        return self.get_paginated_response(serializer.data)
