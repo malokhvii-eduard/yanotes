@@ -1,23 +1,55 @@
-from drf_spectacular.utils import extend_schema
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from ..common.serializers import ErrorSerializer
+from ..users.serializers import UserSerializer
 
 
 token_obtain_pair = extend_schema(
-    operation_id="auth_token_retrieve",
     summary="Authenticate a user",
     description=(
-        "Takes a set of user credentials and returns an access and refresh JSON Web"
-        " Token pair to prove the authentication of those credentials."
+        "Take a set of user credentials and return an access and refresh JSON web"
+        " token pair to prove the authentication of those credentials."
         "\n\n**Access policy**: Public"
     ),
 )(TokenObtainPairView).as_view()
 
 token_refresh = extend_schema(
-    operation_id="auth_token_refresh",
     summary="Refresh an access token",
     description=(
-        "Takes a refresh type JSON Web Token and returns an access type JSON Web"
-        " Token if the refresh token is valid."
+        "Take a refresh type JSON web token and return an access type JSON web"
+        " token if the refresh token is valid."
         + "\n\n**Access policy**: Public"
     ),
 )(TokenRefreshView).as_view()
+
+
+@extend_schema(
+    summary="Verify a user",
+    description=(
+        "Take an access type JSON web token and return a user’s details."
+        "\n\n**Access policy**: Authenticated"
+    ),
+    responses={
+        200: OpenApiResponse(UserSerializer, description="Success"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
+        404: OpenApiResponse(ErrorSerializer, description="User not found"),
+        500: OpenApiResponse(ErrorSerializer, description="Server error"),
+    },
+)
+class TokenVerifyView(generics.RetrieveAPIView):
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=self.request.user.id)
+        return obj
+
+
+token_verify = TokenVerifyView.as_view()
