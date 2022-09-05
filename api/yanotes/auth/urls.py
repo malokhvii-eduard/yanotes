@@ -1,10 +1,10 @@
 from django.urls import path
 
-from . import views
+from .views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 
 urlpatterns = [
-    path("auth/me", views.token_verify, name="token_verify"),
-    path("auth/token", views.token_obtain_pair, name="token"),
-    path("auth/token/refresh", views.token_refresh, name="token_refresh"),
+    path("auth/me", TokenVerifyView.as_view(), name="token_verify"),
+    path("auth/token", TokenObtainPairView.as_view(), name="token"),
+    path("auth/token/refresh", TokenRefreshView.as_view(), name="token_refresh"),
 ]

@@ -3,29 +3,29 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt import views
 
 from ..common.serializers import ErrorSerializer
 from ..users.serializers import UserSerializer
 
 
-token_obtain_pair = extend_schema(
+TokenObtainPairView = extend_schema(
     summary="Authenticate a user",
     description=(
         "Take a set of user credentials and return an access and refresh JSON web"
         " token pair to prove the authentication of those credentials."
         "\n\n**Access policy**: Public"
     ),
-)(TokenObtainPairView).as_view()
+)(views.TokenObtainPairView)
 
-token_refresh = extend_schema(
+TokenRefreshView = extend_schema(
     summary="Refresh an access token",
     description=(
         "Take a refresh type JSON web token and return an access type JSON web"
         " token if the refresh token is valid."
         + "\n\n**Access policy**: Public"
     ),
-)(TokenRefreshView).as_view()
+)(views.TokenRefreshView)
 
 
 @extend_schema(
@@ -50,6 +50,3 @@ class TokenVerifyView(generics.RetrieveAPIView):
         queryset = self.get_queryset()
         obj = get_object_or_404(queryset, pk=self.request.user.id)
         return obj
-
-
-token_verify = TokenVerifyView.as_view()
