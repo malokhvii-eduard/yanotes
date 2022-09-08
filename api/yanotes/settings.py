@@ -40,6 +40,9 @@ ROOT_URLCONF = "yanotes.urls"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
+# https://github.com/adamchainz/django-cors-headers
+CORS_ALLOW_ALL_ORIGINS = True
+
 # Application definition
 # https://docs.djangoproject.com/en/4.1/ref/applications/
 INSTALLED_APPS = [
@@ -58,6 +61,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "colorfield",
+    "corsheaders",
     "django_filters",
     # Project applications
     "yanotes.users",
@@ -67,6 +71,8 @@ INSTALLED_APPS = [
 # Middleware
 # https://docs.djangoproject.com/en/4.1/topics/http/middleware/
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
