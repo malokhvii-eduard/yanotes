@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import logging.config
 import os
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -212,6 +213,17 @@ SPECTACULAR_SETTINGS = {
         {"name": "users", "description": "Manage users"},
         {"name": "notes", "description": "Manage notes"},
     ],
+}
+
+# Django REST Framework JSON Web Token authentication
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=env.int("ACCESS_TOKEN_LIFETIME", default=5)
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=env.int("REFRESH_TOKEN_LIFETIME", default=60)
+    ),
 }
 
 # Logging
