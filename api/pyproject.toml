@@ -16,6 +16,7 @@ djangorestframework = "^3.13.1"
 djangorestframework-simplejwt = "^5.2.0"
 drf-spectacular = {extras = ["sidecar"], version = "^0.23.1"}
 psycopg2-binary = "^2.9.3"
+django-cors-headers = "^3.13.0"
 
 [tool.poetry.dev-dependencies]
 
