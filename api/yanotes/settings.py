@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "colorfield",
     "django_filters",
     # Project applications
+    "yanotes.users",
     "yanotes.notes",
 ]
 
