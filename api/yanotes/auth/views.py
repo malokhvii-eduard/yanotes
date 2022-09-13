@@ -4,6 +4,10 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt import views
+from rest_framework_simplejwt.serializers import (
+    TokenObtainPairSerializer,
+    TokenRefreshSerializer,
+)
 
 from ..common.serializers import ErrorSerializer
 from ..users.serializers import UserSerializer
@@ -16,6 +20,11 @@ TokenObtainPairView = extend_schema(
         " token pair to prove the authentication of those credentials."
         "\n\n**Access policy**: Public"
     ),
+    responses={
+        200: OpenApiResponse(TokenObtainPairSerializer, description="Success"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
+        500: OpenApiResponse(ErrorSerializer, description="Server error"),
+    },
 )(views.TokenObtainPairView)
 
 TokenRefreshView = extend_schema(
@@ -25,6 +34,11 @@ TokenRefreshView = extend_schema(
         " token if the refresh token is valid."
         + "\n\n**Access policy**: Public"
     ),
+    responses={
+        200: OpenApiResponse(TokenRefreshSerializer, description="Success"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
+        500: OpenApiResponse(ErrorSerializer, description="Server error"),
+    },
 )(views.TokenRefreshView)
 
 TokenBlacklistView = extend_schema(
@@ -33,6 +47,11 @@ TokenBlacklistView = extend_schema(
         "Take a refresh type JSON web token and blacklist it."
         + "\n\n**Access policy**: Public"
     ),
+    responses={
+        200: OpenApiResponse({}, description="Success"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
+        500: OpenApiResponse(ErrorSerializer, description="Server error"),
+    },
 )(views.TokenBlacklistView)
 
 
