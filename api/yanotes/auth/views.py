@@ -27,6 +27,14 @@ TokenRefreshView = extend_schema(
     ),
 )(views.TokenRefreshView)
 
+TokenBlacklistView = extend_schema(
+    summary="Blacklist a refresh token",
+    description=(
+        "Take a refresh type JSON web token and blacklist it."
+        + "\n\n**Access policy**: Public"
+    ),
+)(views.TokenBlacklistView)
+
 
 @extend_schema(
     summary="Verify a user",

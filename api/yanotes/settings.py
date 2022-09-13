@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third party applications
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "colorfield",
@@ -225,6 +226,7 @@ SIMPLE_JWT = {
         days=env.int("REFRESH_TOKEN_LIFETIME", default=60)
     ),
     "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 # Logging
