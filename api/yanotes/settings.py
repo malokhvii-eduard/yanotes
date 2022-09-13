@@ -224,6 +224,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=env.int("REFRESH_TOKEN_LIFETIME", default=60)
     ),
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 # Logging
