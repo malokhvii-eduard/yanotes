@@ -182,7 +182,7 @@ test = ["cryptography", "pytest-cov", "pytest-django", "pytest-xdist", "pytest",
 
 [[package]]
 name = "drf-spectacular"
-version = "0.23.1"
+version = "0.24.0"
 description = "Sane and flexible OpenAPI 3 schema generation for Django REST framework"
 category = "main"
 optional = false
@@ -342,7 +342,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.10"
-content-hash = "d0ff1c74749a7b3e6f373198bfed267666704a063c4cc9bafaa672b58ae8f83f"
+content-hash = "7b0534218d332578f5145867e8ea6f36fef3e36473a49df85f3dc7c04acb2d76"
 
 [metadata.files]
 asgiref = []
