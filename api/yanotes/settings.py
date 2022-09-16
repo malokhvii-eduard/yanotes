@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "colorfield",
     "corsheaders",
     "django_filters",
+    "watchman",
     # Project applications
     "yanotes.users",
     "yanotes.notes",
@@ -146,6 +147,10 @@ STATIC_URL = "static/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Django Watchman
+# https://django-watchman.readthedocs.io/en/latest/
+WATCHMAN_CHECKS = ["watchman.checks.databases"]
 
 # Django REST Framework
 # https://www.django-rest-framework.org/api-guide/settings/

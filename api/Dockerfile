@@ -14,6 +14,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY --from=build /dist/requirements.txt requirements.txt
 RUN apt-get update \
+  && apt-get -y --no-install-recommends install curl=7.74.0-1.3+deb11u3 \
   && apt-get autoremove -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
