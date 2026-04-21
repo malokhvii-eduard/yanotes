@@ -1,12 +1,15 @@
 ---
-default_stages: [commit]
+default_stages: [pre-commit]
+
+default_language_version:
+  python: python3.10
 
 ci:
   skip: [commitlint]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -48,21 +51,16 @@ repos:
     hooks:
       - id: pydocstyle
         name: check python docstrings
-  - repo: https://github.com/pycqa/flake8
-    rev: 4.0.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
     hooks:
-      - id: flake8
-        name: check python style and quality
-  - repo: https://github.com/psf/black
-    rev: 22.3.0
-    hooks:
-      - id: black
-        name: format python
-  - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
-    hooks:
-      - id: isort
+      - id: ruff
         name: sort python imports
+        args: [--select, I, --fix]
+      - id: ruff-format
+        name: format python
+      - id: ruff
+        name: check python
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
     hooks:
