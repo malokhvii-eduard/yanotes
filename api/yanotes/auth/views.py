@@ -12,7 +12,6 @@ from rest_framework_simplejwt.serializers import (
 from ..common.serializers import ErrorSerializer
 from ..users.serializers import UserSerializer
 
-
 TokenObtainPairView = extend_schema(
     summary="Authenticate a user",
     description=(
@@ -31,8 +30,7 @@ TokenRefreshView = extend_schema(
     summary="Refresh an access token",
     description=(
         "Take a refresh type JSON web token and return an access type JSON web"
-        " token if the refresh token is valid."
-        + "\n\n**Access policy**: Public"
+        " token if the refresh token is valid." + "\n\n**Access policy**: Public"
     ),
     responses={
         200: OpenApiResponse(TokenRefreshSerializer, description="Success"),

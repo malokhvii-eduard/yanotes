@@ -7,7 +7,6 @@ from .views import (
     TokenVerifyView,
 )
 
-
 urlpatterns = [
     path("auth/me", TokenVerifyView.as_view(), name="token_verify"),
     path("auth/token", TokenObtainPairView.as_view(), name="token"),
