@@ -6,15 +6,14 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+
 import logging.config
 import os
-
 from datetime import timedelta
 from pathlib import Path
 
 import environ
 import structlog
-
 
 env = environ.Env()
 
@@ -62,6 +61,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "cacheops",
     "colorfield",
     "corsheaders",
     "django_filters",
@@ -117,6 +117,26 @@ DATABASES = {
     }
 }
 
+# Cache
+# https://docs.djangoproject.com/en/4.1/ref/settings/#caches
+CACHE_HOST = env.str("CACHE_HOST")
+CACHE_PORT = env.int("CACHE_PORT", default=6379)
+CACHE_DB = env.int("CACHE_DB", default=0)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{CACHE_HOST}:{CACHE_PORT}/{CACHE_DB}",
+    }
+}
+
+# Cacheops
+# https://github.com/Suor/django-cacheops
+CACHEOPS_REDIS = {"host": CACHE_HOST, "port": CACHE_PORT, "db": CACHE_DB}
+CACHEOPS = {
+    "auth.user": {"ops": "all", "timeout": 60 * 15},
+    "notes.*": {"ops": "all", "timeout": 60 * 15},
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators/
 AUTH_PASSWORD_VALIDATORS = [
@@ -150,7 +170,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django Watchman
 # https://django-watchman.readthedocs.io/en/latest/
-WATCHMAN_CHECKS = ["watchman.checks.databases"]
+WATCHMAN_CHECKS = ["watchman.checks.databases", "watchman.checks.caches"]
 
 # Django REST Framework
 # https://www.django-rest-framework.org/api-guide/settings/
