@@ -1,6 +1,23 @@
 x-common: &common
   restart: unless-stopped
 
+x-api-environment: &api-environment
+  ACCESS_TOKEN_LIFETIME: ${ACCESS_TOKEN_LIFETIME-5} # Minutes
+  CACHE_HOST: cache
+  DB_HOST: "${DB_HOST-db}"
+  DB_NAME: "${DB_NAME?}"
+  DB_PASSWORD: "${DB_PASSWORD?}"
+  DB_PORT: "${DB_PORT-5432}"
+  DB_USER: "${DB_USER?}"
+  DEBUG: "${DEBUG-false}"
+  PAGE_SIZE: "${PAGE_SIZE-50}"
+  REFRESH_TOKEN_LIFETIME: "${REFRESH_TOKEN_LIFETIME-60}" # Days
+  SECRET_KEY: "${SECRET_KEY?}"
+  SUPERUSER_EMAIL: "${SUPERUSER_EMAIL?}"
+  SUPERUSER_PASSWORD: "${SUPERUSER_PASSWORD?}"
+  SUPERUSER_USERNAME: "${SUPERUSER_USERNAME?}"
+  TIME_ZONE: "${TIME_ZONE-UTC}"
+
 services:
   gateway:
     <<: *common
@@ -30,25 +47,10 @@ services:
     <<: *common
     image: yanotes/api
     build: api
-    environment:
-      ACCESS_TOKEN_LIFETIME: ${ACCESS_TOKEN_LIFETIME-5} # Minutes
-      CACHE_HOST: cache
-      DB_HOST: "${DB_HOST-db}"
-      DB_NAME: "${DB_NAME?}"
-      DB_PASSWORD: "${DB_PASSWORD?}"
-      DB_PORT: "${DB_PORT-5432}"
-      DB_USER: "${DB_USER?}"
-      DEBUG: "${DEBUG-false}"
-      PAGE_SIZE: "${PAGE_SIZE-50}"
-      REFRESH_TOKEN_LIFETIME: "${REFRESH_TOKEN_LIFETIME-60}" # Days
-      SECRET_KEY: "${SECRET_KEY?}"
-      SUPERUSER_EMAIL: "${SUPERUSER_EMAIL?}"
-      SUPERUSER_PASSWORD: "${SUPERUSER_PASSWORD?}"
-      SUPERUSER_USERNAME: "${SUPERUSER_USERNAME?}"
-      TIME_ZONE: "${TIME_ZONE-UTC}"
+    environment: *api-environment
     depends_on:
-      - db
-      - cache
+      migrations:
+        condition: service_completed_successfully
     labels:
       traefik.enable: true
       traefik.http.middlewares.api_compress.compress: true
@@ -58,6 +60,19 @@ services:
         || PathPrefix(`/admin`)
         || PathPrefix(`/static`)
       traefik.http.routers.api.middlewares: api_compress
+
+  migrations:
+    image: yanotes/api
+    build: api
+    restart: "no"
+    entrypoint: ["python", "manage.py"]
+    command: ["migrate", "--noinput"]
+    environment: *api-environment
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
 
   cache:
     <<: *common
