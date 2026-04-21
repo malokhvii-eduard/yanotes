@@ -8,7 +8,6 @@ from yanotes.tests.assertions import (
     assert_paginated_response,
 )
 
-
 pytestmark = pytest.mark.django_db
 
 
@@ -30,7 +29,9 @@ def test_given_user_when_listing_then_returns_owned_notes(
     assert response.status_code == 200
     payload = response.json()
     assert_paginated_response(payload, count=2, results_length=2)
-    assert {item["id"] for item in payload["results"]} == {note.id for note in own_notes}
+    assert {item["id"] for item in payload["results"]} == {
+        note.id for note in own_notes
+    }
 
 
 def test_given_admin_when_listing_then_returns_all_notes(
@@ -55,7 +56,9 @@ def test_given_admin_when_listing_then_returns_all_notes(
     assert response.status_code == 200
     payload = response.json()
     assert_paginated_response(payload, count=3, results_length=3)
-    assert {item["id"] for item in payload["results"]} == {note.id for note in created_notes}
+    assert {item["id"] for item in payload["results"]} == {
+        note.id for note in created_notes
+    }
 
 
 def test_given_user_with_multiple_notes_when_listing_then_returns_ordered_results(
@@ -82,31 +85,35 @@ def test_given_user_with_multiple_notes_when_listing_then_returns_ordered_result
 def test_given_user_when_creating_own_note_then_returns_201(
     auth_client,
     user,
+    faker,
 ):
+    title = faker.sentence(nb_words=3).rstrip(".")
+    content = faker.paragraph()
     payload = {
-        "title": "Shopping list",
-        "content": "Milk, bread, apples",
+        "title": title,
+        "content": content,
         "owner": user.id,
     }
 
     response = auth_client.post(reverse("note-list"), payload)
 
     assert response.status_code == 201
-    created_note = Note.objects.get(title="Shopping list")
+    created_note = Note.objects.get(title=title)
     assert_note_payload(response.json(), note=created_note)
 
 
 def test_given_user_when_creating_note_for_other_user_then_returns_403(
     auth_client,
     user_factory,
+    faker,
 ):
     other_user = user_factory()
 
     response = auth_client.post(
         reverse("note-list"),
         {
-            "title": "Forbidden",
-            "content": "This should be rejected",
+            "title": faker.sentence(nb_words=3).rstrip("."),
+            "content": faker.paragraph(),
             "owner": other_user.id,
         },
     )
@@ -119,21 +126,23 @@ def test_given_admin_when_creating_note_for_other_user_then_returns_201(
     admin_client,
     admin_user,
     user,
+    faker,
 ):
     assert admin_user.is_staff
     assert not admin_user.is_superuser
 
+    title = faker.sentence(nb_words=3).rstrip(".")
     response = admin_client.post(
         reverse("note-list"),
         {
-            "title": "Delegated note",
-            "content": "Created by an admin",
+            "title": title,
+            "content": faker.paragraph(),
             "owner": user.id,
         },
     )
 
     assert response.status_code == 201
-    created_note = Note.objects.get(title="Delegated note")
+    created_note = Note.objects.get(title=title)
     assert created_note.owner_id == user.id
     assert_note_payload(response.json(), note=created_note)
 
@@ -143,20 +152,22 @@ def test_given_admin_when_updating_foreign_note_then_persists_changes(
     admin_user,
     user_factory,
     note_factory,
+    faker,
 ):
     assert admin_user.is_staff
     assert not admin_user.is_superuser
 
-    foreign_note = note_factory(owner=user_factory(), content="Old content")
+    foreign_note = note_factory(owner=user_factory())
+    updated_content = faker.paragraph()
 
     response = admin_client.patch(
         reverse("note-detail", args=[foreign_note.id]),
-        {"content": "Updated by admin"},
+        {"content": updated_content},
     )
 
     assert response.status_code == 200
     foreign_note.refresh_from_db()
-    assert foreign_note.content == "Updated by admin"
+    assert foreign_note.content == updated_content
     assert_note_payload(response.json(), note=foreign_note)
 
 
@@ -190,22 +201,25 @@ def test_given_user_when_updating_own_note_then_persists_changes(
     auth_client,
     user,
     note_factory,
+    faker,
 ):
-    note = note_factory(owner=user, title="Draft", content="Old content")
+    note = note_factory(owner=user)
+    updated_title = faker.sentence(nb_words=3).rstrip(".")
+    updated_content = faker.paragraph()
 
     response = auth_client.put(
         reverse("note-detail", args=[note.id]),
         {
-            "title": "Draft v2",
-            "content": "Updated content",
+            "title": updated_title,
+            "content": updated_content,
             "owner": user.id,
         },
     )
 
     assert response.status_code == 200
     note.refresh_from_db()
-    assert note.title == "Draft v2"
-    assert note.content == "Updated content"
+    assert note.title == updated_title
+    assert note.content == updated_content
     assert note.owner_id == user.id
     assert_note_payload(response.json(), note=note)
 

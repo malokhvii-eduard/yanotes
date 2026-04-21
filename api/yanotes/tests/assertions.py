@@ -26,7 +26,14 @@ def assert_user_payload(payload, *, user):
 
 
 def assert_note_payload(payload, *, note):
-    assert set(payload) == {"id", "title", "content", "created_at", "updated_at", "owner"}
+    assert set(payload) == {
+        "id",
+        "title",
+        "content",
+        "created_at",
+        "updated_at",
+        "owner",
+    }
     assert payload["id"] == note.id
     assert payload["title"] == note.title
     assert payload["content"] == note.content

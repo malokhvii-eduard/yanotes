@@ -61,6 +61,8 @@ repos:
     hooks:
       - id: bandit
         name: security audit for python
+        args: ["-c", "api/pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v7.0.1
     hooks:

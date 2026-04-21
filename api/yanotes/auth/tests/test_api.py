@@ -7,7 +7,6 @@ from yanotes.tests.assertions import (
     assert_user_payload,
 )
 
-
 pytestmark = pytest.mark.django_db
 
 
@@ -47,7 +46,7 @@ def test_given_invalid_credentials_when_logging_in_then_returns_401(
         reverse("token"),
         {
             "username": user.username,
-            "password": "wrong-password",
+            "password": "wrong-password",  # pragma: allowlist secret
         },
     )
 

@@ -1,3 +1,4 @@
+import logging.config
 import os
 
 os.environ.setdefault(
@@ -10,11 +11,12 @@ os.environ.setdefault("DB_USER", "yanotes")
 os.environ.setdefault("DB_PASSWORD", "yanotes")
 os.environ.setdefault("CACHE_HOST", "localhost")
 
+from . import settings as base_settings
 from .settings import *  # noqa: F401,F403
 
 MIDDLEWARE = [
     middleware
-    for middleware in MIDDLEWARE
+    for middleware in base_settings.MIDDLEWARE
     if middleware not in {"django_structlog.middlewares.RequestMiddleware"}
 ]
 
@@ -39,7 +41,7 @@ CACHEOPS_ENABLED = False
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 REST_FRAMEWORK = {
-    **REST_FRAMEWORK,
+    **base_settings.REST_FRAMEWORK,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 

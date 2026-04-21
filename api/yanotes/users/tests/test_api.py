@@ -9,28 +9,37 @@ from yanotes.tests.assertions import (
     assert_user_payload,
 )
 
-
 pytestmark = pytest.mark.django_db
 
 
 def test_given_payload_when_creating_user_then_hashes_password(
     api_client,
+    faker,
 ):
+    password = faker.password(
+        length=16,
+        special_chars=True,
+        digits=True,
+        upper_case=True,
+        lower_case=True,
+    )
+    payload = {
+        "username": faker.unique.user_name(),
+        "email": faker.unique.email(),
+        "first_name": faker.first_name(),
+        "last_name": faker.last_name(),
+        "password": password,  # pragma: allowlist secret
+    }
+
     response = api_client.post(
         reverse("user-list"),
-        {
-            "username": "new-user",
-            "email": "new-user@example.com",
-            "first_name": "New",
-            "last_name": "User",
-            "password": "Sup3rSecret!",
-        },
+        payload,
     )
 
     assert response.status_code == 201
-    user = get_user_model().objects.get(username="new-user")
+    user = get_user_model().objects.get(username=payload["username"])
     assert_user_payload(response.json(), user=user)
-    assert user.check_password("Sup3rSecret!")
+    assert user.check_password(password)
 
 
 def test_given_admin_when_listing_then_returns_all_users(
@@ -45,7 +54,9 @@ def test_given_admin_when_listing_then_returns_all_users(
     assert response.status_code == 200
     payload = response.json()
     assert_paginated_response(payload, count=3, results_length=3)
-    assert {item["id"] for item in payload["results"]} == {user.id for user in listed_users}
+    assert {item["id"] for item in payload["results"]} == {
+        user.id for user in listed_users
+    }
 
 
 def test_given_user_when_listing_then_returns_403(auth_client):
@@ -92,33 +103,39 @@ def test_given_admin_when_retrieving_other_user_then_returns_profile(
 def test_given_user_when_updating_self_then_persists_changes(
     auth_client,
     user,
+    faker,
 ):
+    updated_first_name = faker.first_name()
+    updated_last_name = faker.last_name()
+    updated_email = faker.unique.email()
+
     response = auth_client.patch(
         reverse("user-detail", args=[user.id]),
         {
-            "first_name": "Updated",
-            "last_name": "Name",
-            "email": "updated@example.com",
+            "first_name": updated_first_name,
+            "last_name": updated_last_name,
+            "email": updated_email,
         },
     )
 
     assert response.status_code == 200
     user.refresh_from_db()
-    assert user.first_name == "Updated"
-    assert user.last_name == "Name"
-    assert user.email == "updated@example.com"
+    assert user.first_name == updated_first_name
+    assert user.last_name == updated_last_name
+    assert user.email == updated_email
     assert_user_payload(response.json(), user=user)
 
 
 def test_given_user_when_updating_other_user_then_returns_404(
     auth_client,
     user_factory,
+    faker,
 ):
     other_user = user_factory()
 
     response = auth_client.patch(
         reverse("user-detail", args=[other_user.id]),
-        {"first_name": "Hijacked"},
+        {"first_name": faker.first_name()},
     )
 
     assert response.status_code == 404
@@ -128,17 +145,19 @@ def test_given_user_when_updating_other_user_then_returns_404(
 def test_given_admin_when_updating_other_user_then_persists_changes(
     admin_client,
     user_factory,
+    faker,
 ):
     other_user = user_factory()
+    updated_first_name = faker.first_name()
 
     response = admin_client.patch(
         reverse("user-detail", args=[other_user.id]),
-        {"first_name": "Promoted"},
+        {"first_name": updated_first_name},
     )
 
     assert response.status_code == 200
     other_user.refresh_from_db()
-    assert other_user.first_name == "Promoted"
+    assert other_user.first_name == updated_first_name
     assert_user_payload(response.json(), user=other_user)
 
 
@@ -185,7 +204,9 @@ def test_given_user_when_listing_self_notes_then_returns_notes(
     assert response.status_code == 200
     payload = response.json()
     assert_paginated_response(payload, count=2, results_length=2)
-    assert {item["id"] for item in payload["results"]} == {note.id for note in own_notes}
+    assert {item["id"] for item in payload["results"]} == {
+        note.id for note in own_notes
+    }
 
 
 def test_given_user_when_listing_other_user_notes_then_returns_404(

@@ -23,6 +23,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "faker>=37.1.0,<38.0.0",
     "pytest>=8.3.5,<9.0.0",
     "pytest-django>=4.11.1,<5.0.0",
     "pytest-sugar>=1.1.1,<2.0.0",
@@ -42,3 +43,6 @@ DJANGO_SETTINGS_MODULE = "yanotes.test_settings"
 addopts = "-ra --strict-markers"
 python_files = ["test_*.py", "*_tests.py", "tests.py"]
 testpaths = ["yanotes"]
+
+[tool.bandit]
+skips = ["B101"]

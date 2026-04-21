@@ -1,5 +1,3 @@
-from itertools import count
-
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -8,7 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from yanotes.notes.models import Note
 
 
-DEFAULT_PASSWORD = "Passw0rd!123"
+def pytest_addoption(parser):
+    parser.addini("faker_seed", "Seed for faker data used in tests.", default="42")
 
 
 @pytest.fixture
@@ -17,26 +16,35 @@ def api_client():
 
 
 @pytest.fixture
-def user_password():
-    return DEFAULT_PASSWORD
+def user_password(faker):
+    return faker.password(
+        length=16,
+        special_chars=False,
+        digits=True,
+        upper_case=True,
+        lower_case=True,
+    )
+
+
+@pytest.fixture(scope="session")
+def faker_seed(pytestconfig):
+    return int(pytestconfig.getini("faker_seed"))
 
 
 @pytest.fixture
-def user_factory(db, user_password):
-    sequence = count()
+def user_factory(db, user_password, faker):
     user_model = get_user_model()
 
     def factory(**overrides):
-        index = next(sequence)
         password = overrides.pop("password", user_password)
         is_staff = overrides.pop("is_staff", False)
         is_superuser = overrides.pop("is_superuser", False)
 
         user = user_model.objects.create_user(
-            username=overrides.pop("username", f"user-{index}"),
-            email=overrides.pop("email", f"user-{index}@example.com"),
-            first_name=overrides.pop("first_name", f"User{index}"),
-            last_name=overrides.pop("last_name", "Tester"),
+            username=overrides.pop("username", faker.unique.user_name()),
+            email=overrides.pop("email", faker.unique.email()),
+            first_name=overrides.pop("first_name", faker.first_name()),
+            last_name=overrides.pop("last_name", faker.last_name()),
             password=password,
             **overrides,
         )
@@ -58,14 +66,7 @@ def user(user_factory):
 
 @pytest.fixture
 def admin_user(user_factory):
-    return user_factory(
-        username="admin",
-        email="admin@example.com",
-        first_name="Admin",
-        last_name="User",
-        is_staff=True,
-        is_superuser=False,
-    )
+    return user_factory(is_staff=True, is_superuser=False)
 
 
 @pytest.fixture
@@ -102,15 +103,12 @@ def admin_client(admin_user, client_for):
 
 
 @pytest.fixture
-def note_factory(db, user_factory):
-    sequence = count()
-
+def note_factory(db, user_factory, faker):
     def factory(**overrides):
-        index = next(sequence)
         owner = overrides.pop("owner", user_factory())
         return Note.objects.create(
-            title=overrides.pop("title", f"Note {index}"),
-            content=overrides.pop("content", f"Note content {index}"),
+            title=overrides.pop("title", faker.sentence(nb_words=4).rstrip(".")),
+            content=overrides.pop("content", faker.text(max_nb_chars=120)),
             owner=owner,
             **overrides,
         )
