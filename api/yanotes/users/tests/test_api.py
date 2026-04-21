@@ -13,7 +13,7 @@ from yanotes.tests.assertions import (
 pytestmark = pytest.mark.django_db
 
 
-def test_given_registration_payload_when_creating_user_then_hashes_password(
+def test_given_payload_when_creating_user_then_hashes_password(
     api_client,
 ):
     response = api_client.post(
@@ -33,7 +33,7 @@ def test_given_registration_payload_when_creating_user_then_hashes_password(
     assert user.check_password("Sup3rSecret!")
 
 
-def test_given_admin_when_listing_users_then_returns_all(
+def test_given_admin_when_listing_then_returns_all_users(
     admin_client,
     admin_user,
     user_factory,
@@ -48,14 +48,14 @@ def test_given_admin_when_listing_users_then_returns_all(
     assert {item["id"] for item in payload["results"]} == {user.id for user in listed_users}
 
 
-def test_given_regular_user_when_listing_users_then_returns_403(auth_client):
+def test_given_user_when_listing_then_returns_403(auth_client):
     response = auth_client.get(reverse("user-list"))
 
     assert response.status_code == 403
     assert_error_response(response.json())
 
 
-def test_given_regular_user_when_retrieving_self_then_returns_profile(
+def test_given_user_when_retrieving_self_then_returns_profile(
     auth_client,
     user,
 ):
@@ -65,7 +65,7 @@ def test_given_regular_user_when_retrieving_self_then_returns_profile(
     assert_user_payload(response.json(), user=user)
 
 
-def test_given_other_user_when_regular_user_retrieves_then_404(
+def test_given_user_when_retrieving_other_user_then_returns_404(
     auth_client,
     user_factory,
 ):
@@ -77,7 +77,7 @@ def test_given_other_user_when_regular_user_retrieves_then_404(
     assert_error_response(response.json())
 
 
-def test_given_other_user_when_admin_retrieves_then_returns_profile(
+def test_given_admin_when_retrieving_other_user_then_returns_profile(
     admin_client,
     user_factory,
 ):
@@ -89,7 +89,7 @@ def test_given_other_user_when_admin_retrieves_then_returns_profile(
     assert_user_payload(response.json(), user=other_user)
 
 
-def test_given_regular_user_when_updating_self_then_persists_changes(
+def test_given_user_when_updating_self_then_persists_changes(
     auth_client,
     user,
 ):
@@ -110,7 +110,7 @@ def test_given_regular_user_when_updating_self_then_persists_changes(
     assert_user_payload(response.json(), user=user)
 
 
-def test_given_other_user_when_regular_user_updates_then_404(
+def test_given_user_when_updating_other_user_then_returns_404(
     auth_client,
     user_factory,
 ):
@@ -125,7 +125,7 @@ def test_given_other_user_when_regular_user_updates_then_404(
     assert_error_response(response.json())
 
 
-def test_given_other_user_when_admin_updates_then_persists_changes(
+def test_given_admin_when_updating_other_user_then_persists_changes(
     admin_client,
     user_factory,
 ):
@@ -142,7 +142,7 @@ def test_given_other_user_when_admin_updates_then_persists_changes(
     assert_user_payload(response.json(), user=other_user)
 
 
-def test_given_regular_user_with_notes_when_deleting_self_then_removes_account_and_notes(
+def test_given_user_with_notes_when_deleting_self_then_removes_user_and_notes(
     auth_client,
     user,
     note_factory,
@@ -156,7 +156,7 @@ def test_given_regular_user_with_notes_when_deleting_self_then_removes_account_a
     assert not Note.objects.filter(pk=note.id).exists()
 
 
-def test_given_other_user_when_admin_deletes_then_removes_user(
+def test_given_admin_when_deleting_other_user_then_removes_user(
     admin_client,
     user_factory,
 ):
@@ -168,7 +168,7 @@ def test_given_other_user_when_admin_deletes_then_removes_user(
     assert not get_user_model().objects.filter(pk=other_user.id).exists()
 
 
-def test_given_current_user_notes_when_listing_user_notes_then_returns_owned_page(
+def test_given_user_when_listing_self_notes_then_returns_notes(
     auth_client,
     user,
     user_factory,
@@ -188,7 +188,7 @@ def test_given_current_user_notes_when_listing_user_notes_then_returns_owned_pag
     assert {item["id"] for item in payload["results"]} == {note.id for note in own_notes}
 
 
-def test_given_other_user_notes_when_regular_user_lists_then_404(
+def test_given_user_when_listing_other_user_notes_then_returns_404(
     auth_client,
     user_factory,
 ):
@@ -200,7 +200,7 @@ def test_given_other_user_notes_when_regular_user_lists_then_404(
     assert_error_response(response.json())
 
 
-def test_given_other_user_notes_when_admin_lists_then_returns_page(
+def test_given_admin_when_listing_other_user_notes_then_returns_notes(
     admin_client,
     user_factory,
     note_factory,
@@ -221,7 +221,7 @@ def test_given_other_user_notes_when_admin_lists_then_returns_page(
     }
 
 
-def test_given_missing_user_when_admin_lists_user_notes_then_404(
+def test_given_admin_when_listing_missing_user_notes_then_returns_404(
     admin_client,
 ):
     response = admin_client.get(reverse("user-list-notes", args=[999999]))

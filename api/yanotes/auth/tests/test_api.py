@@ -12,7 +12,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.parametrize("route_name", ["token_verify", "note-list", "user-list"])
-def test_given_protected_endpoint_when_anonymous_then_401(
+def test_given_anonymous_when_accessing_protected_route_then_returns_401(
     api_client,
     route_name,
 ):
@@ -39,7 +39,7 @@ def test_given_valid_credentials_when_logging_in_then_returns_tokens(
     assert_token_pair_payload(response.json())
 
 
-def test_given_invalid_credentials_when_logging_in_then_401(
+def test_given_invalid_credentials_when_logging_in_then_returns_401(
     api_client,
     user,
 ):
@@ -55,7 +55,7 @@ def test_given_invalid_credentials_when_logging_in_then_401(
     assert_error_response(response.json())
 
 
-def test_given_valid_refresh_when_refreshing_then_rotates_tokens(
+def test_given_valid_refresh_token_when_refreshing_then_rotates_tokens(
     api_client,
     user,
     token_pair_for,
@@ -73,7 +73,7 @@ def test_given_valid_refresh_when_refreshing_then_rotates_tokens(
     assert payload["refresh"] != tokens["refresh"]
 
 
-def test_given_blacklisted_refresh_when_refreshing_then_401(
+def test_given_blacklisted_refresh_token_when_refreshing_then_returns_401(
     api_client,
     user,
     token_pair_for,
@@ -94,7 +94,7 @@ def test_given_blacklisted_refresh_when_refreshing_then_401(
     assert_error_response(refresh_response.json())
 
 
-def test_given_authenticated_user_when_getting_me_then_returns_profile(
+def test_given_user_when_retrieving_me_then_returns_profile(
     auth_client,
     user,
 ):

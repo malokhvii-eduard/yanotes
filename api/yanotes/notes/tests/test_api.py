@@ -12,7 +12,7 @@ from yanotes.tests.assertions import (
 pytestmark = pytest.mark.django_db
 
 
-def test_given_regular_user_when_listing_notes_then_returns_owned_notes(
+def test_given_user_when_listing_then_returns_owned_notes(
     auth_client,
     user,
     user_factory,
@@ -33,7 +33,7 @@ def test_given_regular_user_when_listing_notes_then_returns_owned_notes(
     assert {item["id"] for item in payload["results"]} == {note.id for note in own_notes}
 
 
-def test_given_staff_user_when_listing_notes_then_returns_all_notes(
+def test_given_admin_when_listing_then_returns_all_notes(
     admin_client,
     admin_user,
     note_factory,
@@ -58,7 +58,7 @@ def test_given_staff_user_when_listing_notes_then_returns_all_notes(
     assert {item["id"] for item in payload["results"]} == {note.id for note in created_notes}
 
 
-def test_given_multiple_notes_when_listing_with_pagination_then_returns_ordered_slice(
+def test_given_user_with_multiple_notes_when_listing_then_returns_ordered_results(
     auth_client,
     user,
     note_factory,
@@ -79,7 +79,7 @@ def test_given_multiple_notes_when_listing_with_pagination_then_returns_ordered_
     assert payload["previous"] is not None
 
 
-def test_given_self_owned_payload_when_creating_note_then_succeeds(
+def test_given_user_when_creating_own_note_then_returns_201(
     auth_client,
     user,
 ):
@@ -96,7 +96,7 @@ def test_given_self_owned_payload_when_creating_note_then_succeeds(
     assert_note_payload(response.json(), note=created_note)
 
 
-def test_given_foreign_owner_payload_when_creating_note_then_403(
+def test_given_user_when_creating_note_for_other_user_then_returns_403(
     auth_client,
     user_factory,
 ):
@@ -115,7 +115,7 @@ def test_given_foreign_owner_payload_when_creating_note_then_403(
     assert_error_response(response.json())
 
 
-def test_given_staff_user_when_creating_note_for_another_user_then_succeeds(
+def test_given_admin_when_creating_note_for_other_user_then_returns_201(
     admin_client,
     admin_user,
     user,
@@ -138,7 +138,7 @@ def test_given_staff_user_when_creating_note_for_another_user_then_succeeds(
     assert_note_payload(response.json(), note=created_note)
 
 
-def test_given_foreign_note_when_staff_user_updates_content_then_persists_changes(
+def test_given_admin_when_updating_foreign_note_then_persists_changes(
     admin_client,
     admin_user,
     user_factory,
@@ -160,7 +160,7 @@ def test_given_foreign_note_when_staff_user_updates_content_then_persists_change
     assert_note_payload(response.json(), note=foreign_note)
 
 
-def test_given_owned_note_when_retrieving_then_returns_details(
+def test_given_user_when_retrieving_own_note_then_returns_note(
     auth_client,
     user,
     note_factory,
@@ -173,7 +173,7 @@ def test_given_owned_note_when_retrieving_then_returns_details(
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_foreign_note_when_retrieving_then_404(
+def test_given_user_when_retrieving_foreign_note_then_returns_404(
     auth_client,
     user_factory,
     note_factory,
@@ -186,7 +186,7 @@ def test_given_foreign_note_when_retrieving_then_404(
     assert_error_response(response.json())
 
 
-def test_given_owned_note_when_updating_then_persists_changes(
+def test_given_user_when_updating_own_note_then_persists_changes(
     auth_client,
     user,
     note_factory,
@@ -210,7 +210,7 @@ def test_given_owned_note_when_updating_then_persists_changes(
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_owned_note_when_regular_user_changes_owner_then_403(
+def test_given_user_when_changing_own_note_owner_then_returns_403(
     auth_client,
     user,
     user_factory,
@@ -230,7 +230,7 @@ def test_given_owned_note_when_regular_user_changes_owner_then_403(
     assert note.owner_id == user.id
 
 
-def test_given_note_when_staff_user_changes_owner_then_persists_change(
+def test_given_admin_when_changing_note_owner_then_persists_changes(
     admin_client,
     admin_user,
     user_factory,
@@ -254,7 +254,7 @@ def test_given_note_when_staff_user_changes_owner_then_persists_change(
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_foreign_note_when_updating_then_404(
+def test_given_user_when_updating_foreign_note_then_returns_404(
     auth_client,
     user_factory,
     note_factory,
@@ -270,7 +270,7 @@ def test_given_foreign_note_when_updating_then_404(
     assert_error_response(response.json())
 
 
-def test_given_owned_note_when_deleting_then_removes_note(
+def test_given_user_when_deleting_own_note_then_removes_note(
     auth_client,
     user,
     note_factory,
@@ -283,7 +283,7 @@ def test_given_owned_note_when_deleting_then_removes_note(
     assert not Note.objects.filter(pk=note.id).exists()
 
 
-def test_given_foreign_note_when_staff_user_deletes_then_removes_note(
+def test_given_admin_when_deleting_foreign_note_then_removes_note(
     admin_client,
     admin_user,
     user_factory,
@@ -300,7 +300,7 @@ def test_given_foreign_note_when_staff_user_deletes_then_removes_note(
     assert not Note.objects.filter(pk=foreign_note.id).exists()
 
 
-def test_given_foreign_note_when_deleting_then_404(
+def test_given_user_when_deleting_foreign_note_then_returns_404(
     auth_client,
     user_factory,
     note_factory,
