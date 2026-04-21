@@ -210,7 +210,7 @@ def test_given_owned_note_when_updating_then_persists_changes(
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_owned_note_when_regular_user_changes_owner_then_persists_change(
+def test_given_owned_note_when_regular_user_changes_owner_then_403(
     auth_client,
     user,
     user_factory,
@@ -224,15 +224,10 @@ def test_given_owned_note_when_regular_user_changes_owner_then_persists_change(
         {"owner": other_user.id},
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 403
+    assert_error_response(response.json())
     note.refresh_from_db()
-    assert note.owner_id == other_user.id
-    assert_note_payload(response.json(), note=note)
-
-    follow_up_response = auth_client.get(reverse("note-detail", args=[note.id]))
-
-    assert follow_up_response.status_code == 404
-    assert_error_response(follow_up_response.json())
+    assert note.owner_id == user.id
 
 
 def test_given_note_when_staff_user_changes_owner_then_persists_change(

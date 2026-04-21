@@ -109,11 +109,21 @@ class NoteViewSet(viewsets.ModelViewSet):
 
         return Note.objects.filter(owner_id=self.request.user.id)
 
-    def perform_create(self, serializer):
+    def ensure_owner_change_is_allowed(self, serializer):
+        requested_owner = serializer.validated_data.get("owner")
+        if requested_owner is None:
+            return
+
         if (
             not self.request.user.is_staff
-            and serializer.validated_data["owner"].id != self.request.user.id
+            and requested_owner.id != self.request.user.id
         ):
             raise PermissionDenied()
 
+    def perform_create(self, serializer):
+        self.ensure_owner_change_is_allowed(serializer)
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self.ensure_owner_change_is_allowed(serializer)
         serializer.save()
