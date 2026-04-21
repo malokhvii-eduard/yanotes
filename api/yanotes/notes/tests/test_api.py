@@ -283,6 +283,23 @@ def test_given_owned_note_when_deleting_then_removes_note(
     assert not Note.objects.filter(pk=note.id).exists()
 
 
+def test_given_foreign_note_when_staff_user_deletes_then_removes_note(
+    admin_client,
+    admin_user,
+    user_factory,
+    note_factory,
+):
+    assert admin_user.is_staff
+    assert not admin_user.is_superuser
+
+    foreign_note = note_factory(owner=user_factory())
+
+    response = admin_client.delete(reverse("note-detail", args=[foreign_note.id]))
+
+    assert response.status_code == 204
+    assert not Note.objects.filter(pk=foreign_note.id).exists()
+
+
 def test_given_foreign_note_when_deleting_then_404(
     auth_client,
     user_factory,
