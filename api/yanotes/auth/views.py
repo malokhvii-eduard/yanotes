@@ -13,10 +13,10 @@ from ..common.serializers import ErrorSerializer
 from ..users.serializers import UserSerializer
 
 TokenObtainPairView = extend_schema(
-    summary="Authenticate a user",
+    operation_id="auth_token_create",
+    summary="Authenticate user",
     description=(
-        "Take a set of user credentials and return an access and refresh JSON web"
-        " token pair to prove the authentication of those credentials."
+        "Exchange user credentials for an access and refresh token pair."
         "\n\n**Access policy**: Public"
     ),
     responses={
@@ -27,10 +27,11 @@ TokenObtainPairView = extend_schema(
 )(views.TokenObtainPairView)
 
 TokenRefreshView = extend_schema(
-    summary="Refresh an access token",
+    operation_id="auth_token_refresh",
+    summary="Refresh access token",
     description=(
-        "Take a refresh type JSON web token and return an access type JSON web"
-        " token if the refresh token is valid." + "\n\n**Access policy**: Public"
+        "Exchange a valid refresh token for a new access token and refresh token."
+        "\n\n**Access policy**: Public"
     ),
     responses={
         200: OpenApiResponse(TokenRefreshSerializer, description="Success"),
@@ -40,10 +41,11 @@ TokenRefreshView = extend_schema(
 )(views.TokenRefreshView)
 
 TokenBlacklistView = extend_schema(
-    summary="Blacklist a refresh token",
+    operation_id="auth_token_blacklist",
+    summary="Blacklist refresh token",
     description=(
-        "Take a refresh type JSON web token and blacklist it."
-        + "\n\n**Access policy**: Public"
+        "Blacklist a refresh token so it can no longer be used."
+        "\n\n**Access policy**: Public"
     ),
     responses={
         200: OpenApiResponse({}, description="Success"),
@@ -54,9 +56,10 @@ TokenBlacklistView = extend_schema(
 
 
 @extend_schema(
-    summary="Verify a user",
+    operation_id="auth_me_retrieve",
+    summary="Retrieve current user",
     description=(
-        "Take an access type JSON web token and return a user’s details."
+        "Return the authenticated user's profile."
         "\n\n**Access policy**: Authenticated"
     ),
     responses={

@@ -14,11 +14,9 @@ from .serializers import UserSerializer
 
 @extend_schema_view(
     list=extend_schema(
+        operation_id="users_list",
         summary="List users",
-        description=(
-            "List users. Only administrators can list user accounts.\n\n"
-            "**Access policy**: Administrator"
-        ),
+        description=("List all users.\n\n**Access policy**: Administrator"),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
             401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
@@ -27,11 +25,12 @@ from .serializers import UserSerializer
         },
     ),
     create=extend_schema(
-        summary="Create a new user",
+        operation_id="users_create",
+        summary="Create user",
         description=(
-            "Create a new user. Anyone can create a non-administrator user. Only"
-            " administrators can create an administrator user account via the"
-            " admin panel.\n\n"
+            "Create a user profile. This endpoint creates regular users only;"
+            " elevated flags such as administrator or superuser are not granted through"
+            " this API.\n\n"
             "**Access policy**: Public"
         ),
         auth=[],
@@ -42,9 +41,12 @@ from .serializers import UserSerializer
         },
     ),
     retrieve=extend_schema(
-        summary="Inspect a user",
+        operation_id="users_retrieve",
+        summary="Retrieve user",
         description=(
-            "Retrieve details about a user.\n\n**Access policy**: Authenticated"
+            "Retrieve a user profile. Regular users can retrieve only their own"
+            " profile. Administrators can retrieve any user.\n\n"
+            "**Access policy**: Authenticated"
         ),
         responses={
             200: OpenApiResponse(UserSerializer, description="Success"),
@@ -54,10 +56,11 @@ from .serializers import UserSerializer
         },
     ),
     update=extend_schema(
-        summary="Update a user",
+        operation_id="users_update",
+        summary="Update user",
         description=(
-            "Update user details. A regular user account can only update his"
-            " details.\n\n"
+            "Replace a user profile. Regular users can update only their own"
+            " profile. Administrators can update any user.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
@@ -69,10 +72,11 @@ from .serializers import UserSerializer
         },
     ),
     partial_update=extend_schema(
-        summary="Partial update a user",
+        operation_id="users_partial_update",
+        summary="Partially update user",
         description=(
-            "Partial update user details. A regular user account can only update his"
-            " details.\n\n"
+            "Partially update a user profile. Regular users can update only their"
+            " own profile. Administrators can update any user.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
@@ -84,10 +88,11 @@ from .serializers import UserSerializer
         },
     ),
     destroy=extend_schema(
-        summary="Remove a user",
+        operation_id="users_destroy",
+        summary="Delete user",
         description=(
-            "Remove a user. A regular user account can only remove his"
-            " details and other related resources.\n\n"
+            "Delete a user profile. Regular users can delete only their own"
+            " profile. Administrators can delete any user.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={

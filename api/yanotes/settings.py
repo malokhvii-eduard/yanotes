@@ -195,9 +195,7 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
     "TITLE": "YaNotes",
     "DESCRIPTION": (
-        "YaNotes API is an HTTP API for simple note-taking app. It is used by the"
-        " YaNotes UI and everything you can do with the UI can be done using the"
-        " HTTP API.\n\n"
+        "YaNotes API is an HTTP API for simple note-taking app.\n\n"
         "### Authentication\n\n"
         "Most of the API endpoints require to be authenticated as well as some level"
         " of authorization to be used. YaNotes API uses JSON Web Token to manage"
@@ -217,17 +215,20 @@ SPECTACULAR_SETTINGS = {
         " description of each endpoint. Different access policies are available:\n\n"
         "* Public access\n"
         "* Authenticated access\n"
-        "* Administrator access\n"
+        "* Administrator access\n\n"
         "#### Public access\n\n"
         "No authentication is required to access the endpoints with this access"
         " policy.\n\n"
         "#### Authenticated access\n\n"
         "Authentication is required to access the endpoints with this access policy."
         " Extra-checks might be added to ensure access to the resource is granted."
-        " Returned data might also be filtered.\n\n"
+        " Returned data might also be filtered based on the authenticated user. For"
+        " example, regular users may only see or update their own resources.\n\n"
         "#### Administrator access\n\n"
         "Authentication as well as an administrator role are required to access the"
-        " endpoints with this access policy."
+        " endpoints with this access policy. Administrator access may grant broader"
+        " visibility over resources and allow management operations on behalf of"
+        " other users."
     ),
     "CONTACT": {
         "url": "https://malokhvii-eduard.github.io/",

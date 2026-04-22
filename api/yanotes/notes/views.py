@@ -1,4 +1,10 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    OpenApiTypes,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import filters, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -11,13 +17,41 @@ from .serializers import NoteSerializer
 
 @extend_schema_view(
     list=extend_schema(
+        operation_id="notes_list",
         summary="List notes",
         description=(
-            "List notes. List all notes based on the current user authorizations."
-            " Will return all notes if using an administrator account otherwise"
-            " it will only return authorized notes.\n\n"
+            "List notes visible to the current user. Regular users receive only"
+            " their own notes. Administrators receive all notes.\n\n"
+            "Supports limit/offset pagination and ordering by `title` or"
+            " `updated_at`. Use a leading `-` for descending order. When multiple"
+            " notes have the same ordering value, results are ordered"
+            " deterministically by `id` in the same direction.\n\n"
             "**Access policy**: Authenticated"
         ),
+        parameters=[
+            OpenApiParameter(
+                "limit",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description="Number of results to return per page.",
+            ),
+            OpenApiParameter(
+                "offset",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description="Initial index from which to return results.",
+            ),
+            OpenApiParameter(
+                "ordering",
+                OpenApiTypes.STR,
+                OpenApiParameter.QUERY,
+                description=(
+                    "Order results by `title` or `updated_at`. Prefix with `-` for"
+                    " descending order. Ties are resolved deterministically by `id`"
+                    " in the same direction."
+                ),
+            ),
+        ],
         responses={
             200: OpenApiResponse(NoteSerializer, description="Success"),
             401: OpenApiResponse(ErrorSerializer, description="Unauthorized"),
@@ -25,9 +59,11 @@ from .serializers import NoteSerializer
         },
     ),
     create=extend_schema(
-        summary="Create a new note",
+        operation_id="notes_create",
+        summary="Create note",
         description=(
-            "Create a new note. A regular user account can only create his notes.\n\n"
+            "Create a note. Regular users can create notes only for themselves."
+            " Administrators can create notes for any owner.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
@@ -38,10 +74,11 @@ from .serializers import NoteSerializer
         },
     ),
     retrieve=extend_schema(
-        summary="Inspect a note",
+        operation_id="notes_retrieve",
+        summary="Retrieve note",
         description=(
-            "Retrieve details about a note. A regular user account can only inspect"
-            " his notes.\n\n"
+            "Retrieve a note. Regular users can access only their own notes."
+            " Administrators can access any note.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
@@ -52,10 +89,12 @@ from .serializers import NoteSerializer
         },
     ),
     update=extend_schema(
-        summary="Update a note",
+        operation_id="notes_update",
+        summary="Update note",
         description=(
-            "Update a note. A regular user account can only update his notes."
-            " Only administrators can change note ownership.\n\n"
+            "Replace a note. Regular users can update only their own notes and"
+            " cannot change ownership. Administrators can update any note and change"
+            " the owner.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
@@ -68,10 +107,12 @@ from .serializers import NoteSerializer
         },
     ),
     partial_update=extend_schema(
-        summary="Partial update a note",
+        operation_id="notes_partial_update",
+        summary="Partially update note",
         description=(
-            "Partial update a note. A regular user account can only partial update his"
-            " notes. Only administrators can change note ownership.\n\n"
+            "Partially update a note. Regular users can update only their own notes"
+            " and cannot change ownership. Administrators can update any note and"
+            " change the owner.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
@@ -84,9 +125,11 @@ from .serializers import NoteSerializer
         },
     ),
     destroy=extend_schema(
-        summary="Remove a note",
+        operation_id="notes_destroy",
+        summary="Delete note",
         description=(
-            "Remove a note. A regular user account can only remove his notes.\n\n"
+            "Delete a note. Regular users can delete only their own notes."
+            " Administrators can delete any note.\n\n"
             "**Access policy**: Authenticated"
         ),
         responses={
