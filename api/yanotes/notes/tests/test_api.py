@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from yanotes.notes.models import Note
 from yanotes.tests.assertions import (
@@ -106,7 +109,7 @@ def test_given_admin_when_listing_then_returns_all_notes(
     }
 
 
-def test_given_multiple_notes_when_listing_then_returns_ordered_notes(
+def test_given_multiple_notes_when_listing_by_title_then_returns_ordered_notes(
     user_client,
     user,
     note_factory,
@@ -124,6 +127,42 @@ def test_given_multiple_notes_when_listing_then_returns_ordered_notes(
     payload = response.json()
     assert_paginated_response(payload, count=3, results_length=2)
     assert [item["title"] for item in payload["results"]] == ["Bravo", "Charlie"]
+    assert payload["previous"] is not None
+
+
+def test_given_multiple_notes_when_listing_by_updated_at_then_returns_ordered_notes(
+    user_client,
+    user,
+    note_factory,
+):
+    notes = {
+        "Charlie": note_factory(owner=user, title="Charlie"),
+        "Alpha": note_factory(owner=user, title="Alpha"),
+        "Bravo": note_factory(owner=user, title="Bravo"),
+    }
+    now = timezone.now()
+    notes["Charlie"].updated_at = now + timedelta(minutes=1)
+    notes["Alpha"].updated_at = now
+    notes["Bravo"].updated_at = now + timedelta(minutes=2)
+
+    Note.objects.bulk_update(
+        [
+            notes["Charlie"],
+            notes["Alpha"],
+            notes["Bravo"],
+        ],
+        ["updated_at"],
+    )
+
+    response = user_client.get(
+        reverse("note-list"),
+        {"limit": 2, "offset": 1, "ordering": "updated_at"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=3, results_length=2)
+    assert [item["title"] for item in payload["results"]] == ["Charlie", "Bravo"]
     assert payload["previous"] is not None
 
 
