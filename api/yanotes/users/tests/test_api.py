@@ -347,6 +347,18 @@ def test_given_user_when_listing_self_notes_then_returns_notes(
     }
 
 
+def test_given_user_without_notes_when_listing_self_notes_then_returns_empty(
+    user_client,
+    user,
+):
+    response = user_client.get(reverse("user-list-notes", args=[user.id]))
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=0, results_length=0)
+    assert payload["results"] == []
+
+
 def test_given_user_when_listing_other_user_notes_then_not_found(
     user_client,
     user_factory,
@@ -357,6 +369,20 @@ def test_given_user_when_listing_other_user_notes_then_not_found(
 
     assert response.status_code == 404
     assert_error_response(response.json())
+
+
+def test_given_admin_when_listing_other_user_without_notes_then_returns_empty(
+    admin_client,
+    user_factory,
+):
+    other_user = user_factory()
+
+    response = admin_client.get(reverse("user-list-notes", args=[other_user.id]))
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=0, results_length=0)
+    assert payload["results"] == []
 
 
 def test_given_admin_when_listing_other_user_notes_then_returns_notes(

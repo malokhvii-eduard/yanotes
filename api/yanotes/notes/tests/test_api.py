@@ -83,6 +83,17 @@ def test_given_user_when_listing_then_returns_owned_notes(
     }
 
 
+def test_given_user_without_notes_when_listing_then_returns_empty(
+    user_client,
+):
+    response = user_client.get(reverse("note-list"))
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=0, results_length=0)
+    assert payload["results"] == []
+
+
 def test_given_admin_when_listing_then_returns_all_notes(
     admin_client,
     admin_user,
