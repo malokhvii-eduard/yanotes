@@ -19,14 +19,12 @@ pytestmark = pytest.mark.django_db
         ("get", "user-detail", None),
         ("patch", "user-detail", {"first_name": "Anonymous"}),
         ("delete", "user-detail", None),
-        ("get", "user-list-notes", None),
     ],
     ids=[
         "get-user-list",
         "get-user-detail",
         "patch-user-detail",
         "delete-user-detail",
-        "get-user-list-notes",
     ],
 )
 def test_given_anonymous_when_accessing_endpoint_then_unauthorized(
@@ -160,30 +158,6 @@ def test_given_admin_flags_when_creating_then_persists_regular_user(
     assert_user_payload(response.json(), user=user)
 
 
-def test_given_user_when_listing_then_forbidden(user_client):
-    response = user_client.get(reverse("user-list"))
-
-    assert response.status_code == 403
-    assert_error_response(response.json())
-
-
-def test_given_admin_when_listing_then_returns_all_users(
-    admin_client,
-    admin_user,
-    user_factory,
-):
-    listed_users = [admin_user, user_factory(), user_factory()]
-
-    response = admin_client.get(reverse("user-list"))
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert_paginated_response(payload, count=3, results_length=3)
-    assert {item["id"] for item in payload["results"]} == {
-        user.id for user in listed_users
-    }
-
-
 def test_given_user_when_retrieving_self_then_returns_profile(
     user_client,
     user,
@@ -298,6 +272,30 @@ def test_given_admin_flags_when_updating_self_then_keeps_regular_user(
     assert_user_payload(response.json(), user=user)
 
 
+def test_given_user_when_listing_then_forbidden(user_client):
+    response = user_client.get(reverse("user-list"))
+
+    assert response.status_code == 403
+    assert_error_response(response.json())
+
+
+def test_given_admin_when_listing_then_returns_all_users(
+    admin_client,
+    admin_user,
+    user_factory,
+):
+    listed_users = [admin_user, user_factory(), user_factory()]
+
+    response = admin_client.get(reverse("user-list"))
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=3, results_length=3)
+    assert {item["id"] for item in payload["results"]} == {
+        user.id for user in listed_users
+    }
+
+
 def test_given_user_with_notes_when_deleting_self_then_removes_user_and_notes(
     user_client,
     user,
@@ -322,94 +320,3 @@ def test_given_admin_when_deleting_other_user_then_removes_user(
 
     assert response.status_code == 204
     assert not get_user_model().objects.filter(pk=other_user.id).exists()
-
-
-def test_given_user_when_listing_self_notes_then_returns_notes(
-    user_client,
-    user,
-    user_factory,
-    note_factory,
-    faker,
-):
-    own_notes = [
-        note_factory(owner=user, title=faker.word()),
-        note_factory(owner=user, title=faker.word()),
-    ]
-    note_factory(owner=user_factory(), title=faker.word())
-
-    response = user_client.get(reverse("user-list-notes", args=[user.id]))
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert_paginated_response(payload, count=2, results_length=2)
-    assert {item["id"] for item in payload["results"]} == {
-        note.id for note in own_notes
-    }
-
-
-def test_given_user_without_notes_when_listing_self_notes_then_returns_empty(
-    user_client,
-    user,
-):
-    response = user_client.get(reverse("user-list-notes", args=[user.id]))
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert_paginated_response(payload, count=0, results_length=0)
-    assert payload["results"] == []
-
-
-def test_given_user_when_listing_other_user_notes_then_not_found(
-    user_client,
-    user_factory,
-):
-    other_user = user_factory()
-
-    response = user_client.get(reverse("user-list-notes", args=[other_user.id]))
-
-    assert response.status_code == 404
-    assert_error_response(response.json())
-
-
-def test_given_admin_when_listing_other_user_without_notes_then_returns_empty(
-    admin_client,
-    user_factory,
-):
-    other_user = user_factory()
-
-    response = admin_client.get(reverse("user-list-notes", args=[other_user.id]))
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert_paginated_response(payload, count=0, results_length=0)
-    assert payload["results"] == []
-
-
-def test_given_admin_when_listing_other_user_notes_then_returns_notes(
-    admin_client,
-    user_factory,
-    note_factory,
-):
-    other_user = user_factory()
-    other_user_notes = [
-        note_factory(owner=other_user),
-        note_factory(owner=other_user),
-    ]
-
-    response = admin_client.get(reverse("user-list-notes", args=[other_user.id]))
-
-    assert response.status_code == 200
-    payload = response.json()
-    assert_paginated_response(payload, count=2, results_length=2)
-    assert {item["id"] for item in payload["results"]} == {
-        note.id for note in other_user_notes
-    }
-
-
-def test_given_admin_when_listing_missing_user_notes_then_not_found(
-    admin_client,
-):
-    response = admin_client.get(reverse("user-list-notes", args=[999999]))
-
-    assert response.status_code == 404
-    assert_error_response(response.json())
