@@ -54,6 +54,24 @@ def test_given_invalid_credentials_when_logging_in_then_unauthorized(
     assert_error_response(response.json())
 
 
+def test_given_empty_payload_when_logging_in_then_bad_request(
+    api_client,
+):
+    response = api_client.post(
+        reverse("token"),
+        {},
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert "username" in payload
+    assert "password" in payload
+    assert isinstance(payload["username"], list)
+    assert isinstance(payload["password"], list)
+    assert payload["username"]
+    assert payload["password"]
+
+
 def test_given_user_when_retrieving_me_then_returns_profile(
     user_client,
     user,
@@ -82,6 +100,33 @@ def test_given_valid_refresh_token_when_refreshing_then_rotates_tokens(
     assert payload["refresh"] != tokens["refresh"]
 
 
+def test_given_missing_refresh_when_refreshing_then_bad_request(
+    api_client,
+):
+    response = api_client.post(
+        reverse("token_refresh"),
+        {},
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert list(payload) == ["refresh"]
+    assert isinstance(payload["refresh"], list)
+    assert payload["refresh"]
+
+
+def test_given_invalid_refresh_token_when_refreshing_then_unauthorized(
+    api_client,
+):
+    response = api_client.post(
+        reverse("token_refresh"),
+        {"refresh": "invalid-token"},
+    )
+
+    assert response.status_code == 401
+    assert_error_response(response.json())
+
+
 def test_given_blacklisted_refresh_token_when_refreshing_then_unauthorized(
     api_client,
     user,
@@ -101,3 +146,18 @@ def test_given_blacklisted_refresh_token_when_refreshing_then_unauthorized(
     assert blacklist_response.status_code == 200
     assert refresh_response.status_code == 401
     assert_error_response(refresh_response.json())
+
+
+def test_given_missing_refresh_when_blacklisting_then_bad_request(
+    api_client,
+):
+    response = api_client.post(
+        reverse("token_blacklist"),
+        {},
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert list(payload) == ["refresh"]
+    assert isinstance(payload["refresh"], list)
+    assert payload["refresh"]
