@@ -10,12 +10,12 @@ from yanotes.tests.assertions import (
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize("route_name", ["token_verify"], ids=["get-token-verify"])
+@pytest.mark.parametrize("view_name", ["token_verify"], ids=["get-token-verify"])
 def test_given_anonymous_when_accessing_endpoint_then_unauthorized(
     api_client,
-    route_name,
+    view_name,
 ):
-    response = api_client.get(reverse(route_name))
+    response = api_client.get(reverse(view_name))
 
     assert response.status_code == 401
     assert_error_response(response.json())
@@ -52,6 +52,16 @@ def test_given_invalid_credentials_when_logging_in_then_unauthorized(
 
     assert response.status_code == 401
     assert_error_response(response.json())
+
+
+def test_given_user_when_retrieving_me_then_returns_profile(
+    user_client,
+    user,
+):
+    response = user_client.get(reverse("token_verify"))
+
+    assert response.status_code == 200
+    assert_user_payload(response.json(), user=user)
 
 
 def test_given_valid_refresh_token_when_refreshing_then_rotates_tokens(
@@ -91,13 +101,3 @@ def test_given_blacklisted_refresh_token_when_refreshing_then_unauthorized(
     assert blacklist_response.status_code == 200
     assert refresh_response.status_code == 401
     assert_error_response(refresh_response.json())
-
-
-def test_given_user_when_retrieving_me_then_returns_profile(
-    user_client,
-    user,
-):
-    response = user_client.get(reverse("token_verify"))
-
-    assert response.status_code == 200
-    assert_user_payload(response.json(), user=user)

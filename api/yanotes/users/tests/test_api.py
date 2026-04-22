@@ -13,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.parametrize(
-    ("method_name", "route_name", "payload"),
+    ("view_method", "view_name", "payload"),
     [
         ("get", "user-list", None),
         ("get", "user-detail", None),
@@ -32,15 +32,19 @@ pytestmark = pytest.mark.django_db
 def test_given_anonymous_when_accessing_endpoint_then_unauthorized(
     api_client,
     user,
-    method_name,
-    route_name,
+    view_method,
+    view_name,
     payload,
 ):
-    url = reverse(route_name, args=[user.id]) if route_name != "user-list" else reverse(route_name)
+    url = (
+        reverse(view_name, args=[user.id])
+        if view_name != "user-list"
+        else reverse(view_name)
+    )
     response = (
-        getattr(api_client, method_name)(url, payload)
+        getattr(api_client, view_method)(url, payload)
         if payload is not None
-        else getattr(api_client, method_name)(url)
+        else getattr(api_client, view_method)(url)
     )
 
     assert response.status_code == 401
@@ -51,19 +55,18 @@ def test_given_payload_when_creating_then_persists_user(
     api_client,
     faker,
 ):
-    password = faker.password(
-        length=16,
-        special_chars=True,
-        digits=True,
-        upper_case=True,
-        lower_case=True,
-    )
     payload = {
         "username": faker.unique.user_name(),
         "email": faker.unique.email(),
         "first_name": faker.first_name(),
         "last_name": faker.last_name(),
-        "password": password,  # pragma: allowlist secret
+        "password": faker.password(
+            length=16,
+            special_chars=True,
+            digits=True,
+            upper_case=True,
+            lower_case=True,
+        ),
     }
 
     response = api_client.post(
@@ -74,7 +77,14 @@ def test_given_payload_when_creating_then_persists_user(
     assert response.status_code == 201
     user = get_user_model().objects.get(username=payload["username"])
     assert_user_payload(response.json(), user=user)
-    assert user.check_password(password)
+    assert user.check_password(payload["password"])
+
+
+def test_given_user_when_listing_then_forbidden(user_client):
+    response = user_client.get(reverse("user-list"))
+
+    assert response.status_code == 403
+    assert_error_response(response.json())
 
 
 def test_given_admin_when_listing_then_returns_all_users(
@@ -92,13 +102,6 @@ def test_given_admin_when_listing_then_returns_all_users(
     assert {item["id"] for item in payload["results"]} == {
         user.id for user in listed_users
     }
-
-
-def test_given_user_when_listing_then_forbidden(user_client):
-    response = user_client.get(reverse("user-list"))
-
-    assert response.status_code == 403
-    assert_error_response(response.json())
 
 
 def test_given_user_when_retrieving_self_then_returns_profile(
@@ -227,12 +230,13 @@ def test_given_user_when_listing_self_notes_then_returns_notes(
     user,
     user_factory,
     note_factory,
+    faker,
 ):
     own_notes = [
-        note_factory(owner=user, title="One"),
-        note_factory(owner=user, title="Two"),
+        note_factory(owner=user, title=faker.word()),
+        note_factory(owner=user, title=faker.word()),
     ]
-    note_factory(owner=user_factory(), title="Foreign")
+    note_factory(owner=user_factory(), title=faker.word())
 
     response = user_client.get(reverse("user-list-notes", args=[user.id]))
 

@@ -11,6 +11,11 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture
+def faker_seed(pytestconfig):
+    return int(pytestconfig.getini("faker_seed"))
+
+
+@pytest.fixture
 def api_client():
     return APIClient()
 
@@ -26,9 +31,27 @@ def user_password(faker):
     )
 
 
-@pytest.fixture(scope="session")
-def faker_seed(pytestconfig):
-    return int(pytestconfig.getini("faker_seed"))
+@pytest.fixture
+def token_pair_for():
+    def factory(user):
+        refresh = RefreshToken.for_user(user)
+        return {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
+
+    return factory
+
+
+@pytest.fixture
+def client_for(token_pair_for):
+    def factory(user):
+        client = APIClient()
+        tokens = token_pair_for(user)
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens['access']}")
+        return client
+
+    return factory
 
 
 @pytest.fixture
@@ -60,49 +83,6 @@ def user_factory(db, user_password, faker):
 
 
 @pytest.fixture
-def user(user_factory):
-    return user_factory()
-
-
-@pytest.fixture
-def admin_user(user_factory):
-    return user_factory(is_staff=True, is_superuser=False)
-
-
-@pytest.fixture
-def token_pair_for():
-    def factory(user):
-        refresh = RefreshToken.for_user(user)
-        return {
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        }
-
-    return factory
-
-
-@pytest.fixture
-def client_for(token_pair_for):
-    def factory(user):
-        client = APIClient()
-        tokens = token_pair_for(user)
-        client.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens['access']}")
-        return client
-
-    return factory
-
-
-@pytest.fixture
-def user_client(user, client_for):
-    return client_for(user)
-
-
-@pytest.fixture
-def admin_client(admin_user, client_for):
-    return client_for(admin_user)
-
-
-@pytest.fixture
 def note_factory(db, user_factory, faker):
     def factory(**overrides):
         owner = overrides.pop("owner", user_factory())
@@ -114,3 +94,23 @@ def note_factory(db, user_factory, faker):
         )
 
     return factory
+
+
+@pytest.fixture
+def user(user_factory):
+    return user_factory()
+
+
+@pytest.fixture
+def admin_user(user_factory):
+    return user_factory(is_staff=True, is_superuser=False)
+
+
+@pytest.fixture
+def user_client(user, client_for):
+    return client_for(user)
+
+
+@pytest.fixture
+def admin_client(admin_user, client_for):
+    return client_for(admin_user)
