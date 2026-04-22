@@ -12,6 +12,41 @@ from yanotes.tests.assertions import (
 pytestmark = pytest.mark.django_db
 
 
+@pytest.mark.parametrize(
+    ("method_name", "route_name", "payload"),
+    [
+        ("get", "user-list", None),
+        ("get", "user-detail", None),
+        ("patch", "user-detail", {"first_name": "Anonymous"}),
+        ("delete", "user-detail", None),
+        ("get", "user-list-notes", None),
+    ],
+    ids=[
+        "get-user-list",
+        "get-user-detail",
+        "patch-user-detail",
+        "delete-user-detail",
+        "get-user-list-notes",
+    ],
+)
+def test_given_anonymous_when_accessing_endpoint_then_returns_401(
+    api_client,
+    user,
+    method_name,
+    route_name,
+    payload,
+):
+    url = reverse(route_name, args=[user.id]) if route_name != "user-list" else reverse(route_name)
+    response = (
+        getattr(api_client, method_name)(url, payload)
+        if payload is not None
+        else getattr(api_client, method_name)(url)
+    )
+
+    assert response.status_code == 401
+    assert_error_response(response.json())
+
+
 def test_given_payload_when_creating_user_then_hashes_password(
     api_client,
     faker,

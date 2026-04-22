@@ -10,8 +10,8 @@ from yanotes.tests.assertions import (
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize("route_name", ["token_verify", "note-list", "user-list"])
-def test_given_anonymous_when_accessing_protected_route_then_returns_401(
+@pytest.mark.parametrize("route_name", ["token_verify"], ids=["get-token-verify"])
+def test_given_anonymous_when_accessing_endpoint_then_returns_401(
     api_client,
     route_name,
 ):

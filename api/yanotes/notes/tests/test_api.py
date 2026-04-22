@@ -11,6 +11,52 @@ from yanotes.tests.assertions import (
 pytestmark = pytest.mark.django_db
 
 
+@pytest.mark.parametrize(
+    ("method_name", "route_name", "payload"),
+    [
+        ("get", "note-list", None),
+        ("get", "note-detail", None),
+        ("patch", "note-detail", {"title": "Updated"}),
+        ("delete", "note-detail", None),
+        (
+            "post",
+            "note-list",
+            {"title": "Anonymous note", "content": "Forbidden", "owner": 1},
+        ),
+    ],
+    ids=[
+        "get-note-list",
+        "get-note-detail",
+        "patch-note-detail",
+        "delete-note-detail",
+        "post-note-list",
+    ],
+)
+def test_given_anonymous_when_accessing_endpoint_then_returns_401(
+    api_client,
+    note_factory,
+    user,
+    method_name,
+    route_name,
+    payload,
+):
+    note = note_factory(owner=user)
+    url = (
+        reverse(route_name, args=[note.id])
+        if route_name == "note-detail"
+        else reverse(route_name)
+    )
+
+    response = (
+        getattr(api_client, method_name)(url, payload)
+        if payload is not None
+        else getattr(api_client, method_name)(url)
+    )
+
+    assert response.status_code == 401
+    assert_error_response(response.json())
+
+
 def test_given_user_when_listing_then_returns_owned_notes(
     auth_client,
     user,
