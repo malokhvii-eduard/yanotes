@@ -213,6 +213,26 @@ def test_given_payload_when_creating_then_persists_note(
     assert_note_payload(response.json(), note=created_note)
 
 
+def test_given_payload_without_title_when_creating_then_bad_request(
+    user_client,
+    user,
+    faker,
+):
+    response = user_client.post(
+        reverse("note-list"),
+        {
+            "content": faker.paragraph(),
+            "owner": user.id,
+        },
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert list(payload) == ["title"]
+    assert isinstance(payload["title"], list)
+    assert payload["title"]
+
+
 def test_given_other_owner_when_creating_then_forbidden(
     user_client,
     user_factory,
@@ -282,6 +302,25 @@ def test_given_user_when_updating_own_note_then_persists_changes(
     assert note.content == updated_content
     assert note.owner_id == user.id
     assert_note_payload(response.json(), note=note)
+
+
+def test_given_blank_title_when_updating_then_bad_request(
+    user_client,
+    user,
+    note_factory,
+):
+    note = note_factory(owner=user)
+
+    response = user_client.patch(
+        reverse("note-detail", args=[note.id]),
+        {"title": ""},
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert list(payload) == ["title"]
+    assert isinstance(payload["title"], list)
+    assert payload["title"]
 
 
 def test_given_user_when_changing_own_note_owner_then_forbidden(

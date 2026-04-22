@@ -80,6 +80,57 @@ def test_given_payload_when_creating_then_persists_user(
     assert user.check_password(payload["password"])
 
 
+def test_given_payload_without_required_fields_when_creating_then_bad_request(
+    api_client,
+    faker,
+):
+    response = api_client.post(
+        reverse("user-list"),
+        {
+            "email": faker.unique.email(),
+            "first_name": faker.first_name(),
+            "last_name": faker.last_name(),
+        },
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert "username" in payload
+    assert "password" in payload
+    assert isinstance(payload["username"], list)
+    assert isinstance(payload["password"], list)
+    assert payload["username"]
+    assert payload["password"]
+
+
+def test_given_payload_with_invalid_email_when_creating_then_bad_request(
+    api_client,
+    faker,
+):
+    response = api_client.post(
+        reverse("user-list"),
+        {
+            "username": faker.unique.user_name(),
+            "email": "invalid-email",
+            "first_name": faker.first_name(),
+            "last_name": faker.last_name(),
+            "password": faker.password(
+                length=16,
+                special_chars=True,
+                digits=True,
+                upper_case=True,
+                lower_case=True,
+            ),
+        },
+    )
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert list(payload) == ["email"]
+    assert isinstance(payload["email"], list)
+    assert payload["email"]
+
+
 def test_given_user_when_listing_then_forbidden(user_client):
     response = user_client.get(reverse("user-list"))
 
