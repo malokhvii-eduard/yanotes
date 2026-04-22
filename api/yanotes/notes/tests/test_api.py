@@ -407,6 +407,34 @@ def test_given_payload_when_creating_then_persists_note(
     assert_note_payload(response.json(), note=created_note)
 
 
+def test_given_read_only_fields_when_creating_then_ignores_them(
+    user_client,
+    user,
+    faker,
+):
+    requested_created_at = "2000-01-01T00:00:00Z"
+    requested_updated_at = "2000-01-01T00:00:00Z"
+    response = user_client.post(
+        reverse("note-list"),
+        {
+            "id": 999999,
+            "title": faker.word(),
+            "content": faker.paragraph(),
+            "owner": user.id,
+            "created_at": requested_created_at,
+            "updated_at": requested_updated_at,
+        },
+    )
+
+    assert response.status_code == 201
+    payload = response.json()
+    created_note = Note.objects.get(pk=payload["id"])
+    assert created_note.id != 999999
+    assert payload["created_at"] != requested_created_at
+    assert payload["updated_at"] != requested_updated_at
+    assert_note_payload(payload, note=created_note)
+
+
 def test_given_payload_without_title_when_creating_then_bad_request(
     user_client,
     user,
@@ -495,6 +523,39 @@ def test_given_user_when_updating_own_note_then_persists_changes(
     assert note.title == updated_title
     assert note.content == updated_content
     assert note.owner_id == user.id
+    assert_note_payload(response.json(), note=note)
+
+
+def test_given_read_only_fields_when_updating_then_ignores_them(
+    user_client,
+    user,
+    note_factory,
+    faker,
+):
+    note = note_factory(owner=user)
+    original_id = note.id
+    original_created_at = note.created_at
+    requested_created_at = "2000-01-01T00:00:00Z"
+    requested_updated_at = "2000-01-01T00:00:00Z"
+    updated_title = faker.word()
+
+    response = user_client.patch(
+        reverse("note-detail", args=[note.id]),
+        {
+            "id": 999999,
+            "title": updated_title,
+            "created_at": requested_created_at,
+            "updated_at": requested_updated_at,
+        },
+    )
+
+    assert response.status_code == 200
+    note.refresh_from_db()
+    assert note.id == original_id
+    assert note.created_at == original_created_at
+    assert note.title == updated_title
+    assert response.json()["created_at"] != requested_created_at
+    assert response.json()["updated_at"] != requested_updated_at
     assert_note_payload(response.json(), note=note)
 
 
