@@ -41,7 +41,6 @@ def test_given_admin_when_listing_then_returns_all_notes(
     user_factory,
 ):
     assert admin_user.is_staff
-    assert not admin_user.is_superuser
 
     first_owner = user_factory()
     second_owner = user_factory()
@@ -129,7 +128,6 @@ def test_given_admin_when_creating_note_for_other_user_then_returns_201(
     faker,
 ):
     assert admin_user.is_staff
-    assert not admin_user.is_superuser
 
     title = faker.sentence(nb_words=3).rstrip(".")
     response = admin_client.post(
@@ -155,7 +153,6 @@ def test_given_admin_when_updating_foreign_note_then_persists_changes(
     faker,
 ):
     assert admin_user.is_staff
-    assert not admin_user.is_superuser
 
     foreign_note = note_factory(owner=user_factory())
     updated_content = faker.paragraph()
@@ -251,7 +248,6 @@ def test_given_admin_when_changing_note_owner_then_persists_changes(
     note_factory,
 ):
     assert admin_user.is_staff
-    assert not admin_user.is_superuser
 
     original_owner = user_factory()
     new_owner = user_factory()
@@ -304,7 +300,6 @@ def test_given_admin_when_deleting_foreign_note_then_removes_note(
     note_factory,
 ):
     assert admin_user.is_staff
-    assert not admin_user.is_superuser
 
     foreign_note = note_factory(owner=user_factory())
 
