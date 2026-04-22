@@ -131,6 +131,35 @@ def test_given_payload_with_invalid_email_when_creating_then_bad_request(
     assert payload["email"]
 
 
+def test_given_admin_flags_when_creating_then_persists_regular_user(
+    api_client,
+    faker,
+):
+    payload = {
+        "username": faker.unique.user_name(),
+        "email": faker.unique.email(),
+        "first_name": faker.first_name(),
+        "last_name": faker.last_name(),
+        "password": faker.password(
+            length=16,
+            special_chars=True,
+            digits=True,
+            upper_case=True,
+            lower_case=True,
+        ),
+        "is_staff": True,
+        "is_superuser": True,
+    }
+
+    response = api_client.post(reverse("user-list"), payload)
+
+    assert response.status_code == 201
+    user = get_user_model().objects.get(username=payload["username"])
+    assert not user.is_staff
+    assert not user.is_superuser
+    assert_user_payload(response.json(), user=user)
+
+
 def test_given_user_when_listing_then_forbidden(user_client):
     response = user_client.get(reverse("user-list"))
 
@@ -248,6 +277,25 @@ def test_given_admin_when_updating_other_user_then_persists_changes(
     other_user.refresh_from_db()
     assert other_user.first_name == updated_first_name
     assert_user_payload(response.json(), user=other_user)
+
+
+def test_given_admin_flags_when_updating_self_then_keeps_regular_user(
+    user_client,
+    user,
+):
+    response = user_client.patch(
+        reverse("user-detail", args=[user.id]),
+        {
+            "is_staff": True,
+            "is_superuser": True,
+        },
+    )
+
+    assert response.status_code == 200
+    user.refresh_from_db()
+    assert not user.is_staff
+    assert not user.is_superuser
+    assert_user_payload(response.json(), user=user)
 
 
 def test_given_user_with_notes_when_deleting_self_then_removes_user_and_notes(
