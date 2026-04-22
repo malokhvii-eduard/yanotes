@@ -29,7 +29,7 @@ pytestmark = pytest.mark.django_db
         "get-user-list-notes",
     ],
 )
-def test_given_anonymous_when_accessing_endpoint_then_returns_401(
+def test_given_anonymous_when_accessing_endpoint_then_unauthorized(
     api_client,
     user,
     method_name,
@@ -47,7 +47,7 @@ def test_given_anonymous_when_accessing_endpoint_then_returns_401(
     assert_error_response(response.json())
 
 
-def test_given_payload_when_creating_user_then_hashes_password(
+def test_given_payload_when_creating_then_persists_user(
     api_client,
     faker,
 ):
@@ -94,30 +94,30 @@ def test_given_admin_when_listing_then_returns_all_users(
     }
 
 
-def test_given_user_when_listing_then_returns_403(auth_client):
-    response = auth_client.get(reverse("user-list"))
+def test_given_user_when_listing_then_forbidden(user_client):
+    response = user_client.get(reverse("user-list"))
 
     assert response.status_code == 403
     assert_error_response(response.json())
 
 
 def test_given_user_when_retrieving_self_then_returns_profile(
-    auth_client,
+    user_client,
     user,
 ):
-    response = auth_client.get(reverse("user-detail", args=[user.id]))
+    response = user_client.get(reverse("user-detail", args=[user.id]))
 
     assert response.status_code == 200
     assert_user_payload(response.json(), user=user)
 
 
-def test_given_user_when_retrieving_other_user_then_returns_404(
-    auth_client,
+def test_given_user_when_retrieving_other_user_then_not_found(
+    user_client,
     user_factory,
 ):
     other_user = user_factory()
 
-    response = auth_client.get(reverse("user-detail", args=[other_user.id]))
+    response = user_client.get(reverse("user-detail", args=[other_user.id]))
 
     assert response.status_code == 404
     assert_error_response(response.json())
@@ -136,7 +136,7 @@ def test_given_admin_when_retrieving_other_user_then_returns_profile(
 
 
 def test_given_user_when_updating_self_then_persists_changes(
-    auth_client,
+    user_client,
     user,
     faker,
 ):
@@ -144,7 +144,7 @@ def test_given_user_when_updating_self_then_persists_changes(
     updated_last_name = faker.last_name()
     updated_email = faker.unique.email()
 
-    response = auth_client.patch(
+    response = user_client.patch(
         reverse("user-detail", args=[user.id]),
         {
             "first_name": updated_first_name,
@@ -161,14 +161,14 @@ def test_given_user_when_updating_self_then_persists_changes(
     assert_user_payload(response.json(), user=user)
 
 
-def test_given_user_when_updating_other_user_then_returns_404(
-    auth_client,
+def test_given_user_when_updating_other_user_then_not_found(
+    user_client,
     user_factory,
     faker,
 ):
     other_user = user_factory()
 
-    response = auth_client.patch(
+    response = user_client.patch(
         reverse("user-detail", args=[other_user.id]),
         {"first_name": faker.first_name()},
     )
@@ -197,13 +197,13 @@ def test_given_admin_when_updating_other_user_then_persists_changes(
 
 
 def test_given_user_with_notes_when_deleting_self_then_removes_user_and_notes(
-    auth_client,
+    user_client,
     user,
     note_factory,
 ):
     note = note_factory(owner=user)
 
-    response = auth_client.delete(reverse("user-detail", args=[user.id]))
+    response = user_client.delete(reverse("user-detail", args=[user.id]))
 
     assert response.status_code == 204
     assert not get_user_model().objects.filter(pk=user.id).exists()
@@ -223,7 +223,7 @@ def test_given_admin_when_deleting_other_user_then_removes_user(
 
 
 def test_given_user_when_listing_self_notes_then_returns_notes(
-    auth_client,
+    user_client,
     user,
     user_factory,
     note_factory,
@@ -234,7 +234,7 @@ def test_given_user_when_listing_self_notes_then_returns_notes(
     ]
     note_factory(owner=user_factory(), title="Foreign")
 
-    response = auth_client.get(reverse("user-list-notes", args=[user.id]))
+    response = user_client.get(reverse("user-list-notes", args=[user.id]))
 
     assert response.status_code == 200
     payload = response.json()
@@ -244,13 +244,13 @@ def test_given_user_when_listing_self_notes_then_returns_notes(
     }
 
 
-def test_given_user_when_listing_other_user_notes_then_returns_404(
-    auth_client,
+def test_given_user_when_listing_other_user_notes_then_not_found(
+    user_client,
     user_factory,
 ):
     other_user = user_factory()
 
-    response = auth_client.get(reverse("user-list-notes", args=[other_user.id]))
+    response = user_client.get(reverse("user-list-notes", args=[other_user.id]))
 
     assert response.status_code == 404
     assert_error_response(response.json())
@@ -277,7 +277,7 @@ def test_given_admin_when_listing_other_user_notes_then_returns_notes(
     }
 
 
-def test_given_admin_when_listing_missing_user_notes_then_returns_404(
+def test_given_admin_when_listing_missing_user_notes_then_not_found(
     admin_client,
 ):
     response = admin_client.get(reverse("user-list-notes", args=[999999]))

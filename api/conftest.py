@@ -93,7 +93,7 @@ def client_for(token_pair_for):
 
 
 @pytest.fixture
-def auth_client(user, client_for):
+def user_client(user, client_for):
     return client_for(user)
 
 

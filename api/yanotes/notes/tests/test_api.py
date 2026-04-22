@@ -32,7 +32,7 @@ pytestmark = pytest.mark.django_db
         "post-note-list",
     ],
 )
-def test_given_anonymous_when_accessing_endpoint_then_returns_401(
+def test_given_anonymous_when_accessing_endpoint_then_unauthorized(
     api_client,
     note_factory,
     user,
@@ -58,7 +58,7 @@ def test_given_anonymous_when_accessing_endpoint_then_returns_401(
 
 
 def test_given_user_when_listing_then_returns_owned_notes(
-    auth_client,
+    user_client,
     user,
     user_factory,
     note_factory,
@@ -70,7 +70,7 @@ def test_given_user_when_listing_then_returns_owned_notes(
     other_user = user_factory()
     note_factory(owner=other_user, title="Foreign")
 
-    response = auth_client.get(reverse("note-list"))
+    response = user_client.get(reverse("note-list"))
 
     assert response.status_code == 200
     payload = response.json()
@@ -106,8 +106,8 @@ def test_given_admin_when_listing_then_returns_all_notes(
     }
 
 
-def test_given_user_with_multiple_notes_when_listing_then_returns_ordered_results(
-    auth_client,
+def test_given_multiple_notes_when_listing_then_returns_ordered_notes(
+    user_client,
     user,
     note_factory,
 ):
@@ -115,7 +115,7 @@ def test_given_user_with_multiple_notes_when_listing_then_returns_ordered_result
     note_factory(owner=user, title="Alpha")
     note_factory(owner=user, title="Bravo")
 
-    response = auth_client.get(
+    response = user_client.get(
         reverse("note-list"),
         {"limit": 2, "offset": 1, "ordering": "title"},
     )
@@ -127,8 +127,8 @@ def test_given_user_with_multiple_notes_when_listing_then_returns_ordered_result
     assert payload["previous"] is not None
 
 
-def test_given_user_when_creating_own_note_then_returns_201(
-    auth_client,
+def test_given_payload_when_creating_then_persists_note(
+    user_client,
     user,
     faker,
 ):
@@ -140,21 +140,21 @@ def test_given_user_when_creating_own_note_then_returns_201(
         "owner": user.id,
     }
 
-    response = auth_client.post(reverse("note-list"), payload)
+    response = user_client.post(reverse("note-list"), payload)
 
     assert response.status_code == 201
     created_note = Note.objects.get(title=title)
     assert_note_payload(response.json(), note=created_note)
 
 
-def test_given_user_when_creating_note_for_other_user_then_returns_403(
-    auth_client,
+def test_given_other_owner_when_creating_then_forbidden(
+    user_client,
     user_factory,
     faker,
 ):
     other_user = user_factory()
 
-    response = auth_client.post(
+    response = user_client.post(
         reverse("note-list"),
         {
             "title": faker.sentence(nb_words=3).rstrip("."),
@@ -167,7 +167,7 @@ def test_given_user_when_creating_note_for_other_user_then_returns_403(
     assert_error_response(response.json())
 
 
-def test_given_admin_when_creating_note_for_other_user_then_returns_201(
+def test_given_other_owner_when_admin_creating_then_persists_note(
     admin_client,
     admin_user,
     user,
@@ -215,33 +215,33 @@ def test_given_admin_when_updating_foreign_note_then_persists_changes(
 
 
 def test_given_user_when_retrieving_own_note_then_returns_note(
-    auth_client,
+    user_client,
     user,
     note_factory,
 ):
     note = note_factory(owner=user, title="Private note")
 
-    response = auth_client.get(reverse("note-detail", args=[note.id]))
+    response = user_client.get(reverse("note-detail", args=[note.id]))
 
     assert response.status_code == 200
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_user_when_retrieving_foreign_note_then_returns_404(
-    auth_client,
+def test_given_user_when_retrieving_foreign_note_then_not_found(
+    user_client,
     user_factory,
     note_factory,
 ):
     foreign_note = note_factory(owner=user_factory())
 
-    response = auth_client.get(reverse("note-detail", args=[foreign_note.id]))
+    response = user_client.get(reverse("note-detail", args=[foreign_note.id]))
 
     assert response.status_code == 404
     assert_error_response(response.json())
 
 
 def test_given_user_when_updating_own_note_then_persists_changes(
-    auth_client,
+    user_client,
     user,
     note_factory,
     faker,
@@ -250,7 +250,7 @@ def test_given_user_when_updating_own_note_then_persists_changes(
     updated_title = faker.sentence(nb_words=3).rstrip(".")
     updated_content = faker.paragraph()
 
-    response = auth_client.put(
+    response = user_client.put(
         reverse("note-detail", args=[note.id]),
         {
             "title": updated_title,
@@ -267,8 +267,8 @@ def test_given_user_when_updating_own_note_then_persists_changes(
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_user_when_changing_own_note_owner_then_returns_403(
-    auth_client,
+def test_given_user_when_changing_own_note_owner_then_forbidden(
+    user_client,
     user,
     user_factory,
     note_factory,
@@ -276,7 +276,7 @@ def test_given_user_when_changing_own_note_owner_then_returns_403(
     note = note_factory(owner=user)
     other_user = user_factory()
 
-    response = auth_client.patch(
+    response = user_client.patch(
         reverse("note-detail", args=[note.id]),
         {"owner": other_user.id},
     )
@@ -310,14 +310,14 @@ def test_given_admin_when_changing_note_owner_then_persists_changes(
     assert_note_payload(response.json(), note=note)
 
 
-def test_given_user_when_updating_foreign_note_then_returns_404(
-    auth_client,
+def test_given_user_when_updating_foreign_note_then_not_found(
+    user_client,
     user_factory,
     note_factory,
 ):
     foreign_note = note_factory(owner=user_factory())
 
-    response = auth_client.patch(
+    response = user_client.patch(
         reverse("note-detail", args=[foreign_note.id]),
         {"content": "Attempted overwrite"},
     )
@@ -327,13 +327,13 @@ def test_given_user_when_updating_foreign_note_then_returns_404(
 
 
 def test_given_user_when_deleting_own_note_then_removes_note(
-    auth_client,
+    user_client,
     user,
     note_factory,
 ):
     note = note_factory(owner=user)
 
-    response = auth_client.delete(reverse("note-detail", args=[note.id]))
+    response = user_client.delete(reverse("note-detail", args=[note.id]))
 
     assert response.status_code == 204
     assert not Note.objects.filter(pk=note.id).exists()
@@ -355,14 +355,14 @@ def test_given_admin_when_deleting_foreign_note_then_removes_note(
     assert not Note.objects.filter(pk=foreign_note.id).exists()
 
 
-def test_given_user_when_deleting_foreign_note_then_returns_404(
-    auth_client,
+def test_given_user_when_deleting_foreign_note_then_not_found(
+    user_client,
     user_factory,
     note_factory,
 ):
     foreign_note = note_factory(owner=user_factory())
 
-    response = auth_client.delete(reverse("note-detail", args=[foreign_note.id]))
+    response = user_client.delete(reverse("note-detail", args=[foreign_note.id]))
 
     assert response.status_code == 404
     assert_error_response(response.json())
