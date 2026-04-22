@@ -109,6 +109,23 @@ class NoteViewSet(viewsets.ModelViewSet):
 
         return Note.objects.filter(owner_id=self.request.user.id)
 
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        ordering = self.request.query_params.get("ordering")
+        if not ordering:
+            return queryset
+
+        ordering_fields = [
+            field.strip()
+            for field in ordering.split(",")
+            if field.strip() and field.lstrip("-") in self.ordering_fields
+        ]
+        if not ordering_fields:
+            return queryset
+
+        tie_breaker = "-id" if ordering_fields[0].startswith("-") else "id"
+        return queryset.order_by(*ordering_fields, tie_breaker)
+
     def ensure_owner_change_is_allowed(self, serializer):
         requested_owner = serializer.validated_data.get("owner")
         if requested_owner is None:

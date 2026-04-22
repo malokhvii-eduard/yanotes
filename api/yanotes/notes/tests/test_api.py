@@ -141,6 +141,31 @@ def test_given_multiple_notes_when_listing_by_title_then_returns_ordered_notes(
     assert payload["previous"] is not None
 
 
+def test_given_notes_with_same_title_when_listing_then_orders_by_id(
+    user_client,
+    user,
+    note_factory,
+):
+    notes = {
+        "Alpha": note_factory(owner=user, title="Alpha"),
+        "Bravo1": note_factory(owner=user, title="Bravo"),
+        "Bravo2": note_factory(owner=user, title="Bravo"),
+    }
+
+    response = user_client.get(
+        reverse("note-list"),
+        {"ordering": "title"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["id"] for item in payload["results"]] == [
+        notes["Alpha"].id,
+        notes["Bravo1"].id,
+        notes["Bravo2"].id,
+    ]
+
+
 def test_given_multiple_notes_when_listing_by_updated_at_then_returns_ordered_notes(
     user_client,
     user,
@@ -175,6 +200,44 @@ def test_given_multiple_notes_when_listing_by_updated_at_then_returns_ordered_no
     assert_paginated_response(payload, count=3, results_length=2)
     assert [item["title"] for item in payload["results"]] == ["Charlie", "Bravo"]
     assert payload["previous"] is not None
+
+
+def test_given_notes_with_same_updated_at_when_listing_then_orders_by_id(
+    user_client,
+    user,
+    note_factory,
+):
+    notes = {
+        "Alpha": note_factory(owner=user, title="Alpha"),
+        "Bravo": note_factory(owner=user, title="Bravo"),
+        "Charlie": note_factory(owner=user, title="Charlie"),
+    }
+    now = timezone.now()
+    notes["Alpha"].updated_at = now
+    notes["Bravo"].updated_at = now + timedelta(minutes=1)
+    notes["Charlie"].updated_at = now + timedelta(minutes=1)
+
+    Note.objects.bulk_update(
+        [
+            notes["Alpha"],
+            notes["Bravo"],
+            notes["Charlie"],
+        ],
+        ["updated_at"],
+    )
+
+    response = user_client.get(
+        reverse("note-list"),
+        {"ordering": "updated_at"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["id"] for item in payload["results"]] == [
+        notes["Alpha"].id,
+        notes["Bravo"].id,
+        notes["Charlie"].id,
+    ]
 
 
 def test_given_user_when_retrieving_own_note_then_returns_note(
