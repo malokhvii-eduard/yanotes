@@ -17,12 +17,20 @@ def assert_error_response(payload):
 
 
 def assert_user_payload(payload, *, user):
-    assert set(payload) == {"id", "username", "email", "first_name", "last_name"}
+    assert set(payload) == {
+        "id",
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "is_staff",
+    }
     assert payload["id"] == user.id
     assert payload["username"] == user.username
     assert payload["email"] == user.email
     assert payload["first_name"] == user.first_name
     assert payload["last_name"] == user.last_name
+    assert payload["is_staff"] == user.is_staff
 
 
 def assert_note_payload(payload, *, note):

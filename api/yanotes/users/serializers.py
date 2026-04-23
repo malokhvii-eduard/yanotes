@@ -25,6 +25,7 @@ from rest_framework import serializers
                 "email": "jon.snow@example.com",
                 "first_name": "Jon",
                 "last_name": "Snow",
+                "is_staff": False,
             },
             response_only=True,
         ),
@@ -37,8 +38,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "username", "email", "first_name", "last_name", "password"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_staff",
+            "password",
+        ]
         extra_kwargs = {
             "id": {"read_only": True},
+            "is_staff": {"read_only": True},
             "password": {"write_only": True},
         }
