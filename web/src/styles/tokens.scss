@@ -1,0 +1,29 @@
+:root {
+  --radius-ui: 20px;
+  --ink-strong: #111111;
+  --ink: #2f2f2f;
+  --ink-soft: #676767;
+  --line: rgba(17, 17, 17, 0.12);
+  --line-strong: rgba(17, 17, 17, 0.22);
+  --line-focus: rgba(17, 17, 17, 0.42);
+  --surface-base: #f7f7f4;
+  --surface-card: #ffffff;
+  --surface-soft: #fbfbf9;
+  --hover-soft: rgba(17, 17, 17, 0.08);
+  --hover-strong: rgba(17, 17, 17, 0.12);
+  --radius-card: var(--radius-ui);
+  --radius-dialog: var(--radius-ui);
+  --radius-field: var(--radius-ui);
+  color: var(--ink-strong);
+  background: var(--surface-base);
+  font-family:
+    'SF Mono',
+    'Roboto Mono',
+    'IBM Plex Mono',
+    ui-monospace,
+    monospace;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

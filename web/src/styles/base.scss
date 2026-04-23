@@ -1,0 +1,82 @@
+html {
+  overflow-y: auto;
+}
+
+body,
+#app {
+  min-height: 100vh;
+  margin: 0;
+}
+
+body {
+  color: var(--ink-strong);
+}
+
+a {
+  color: var(--ink-strong);
+  text-decoration-thickness: 0.08em;
+}
+
+.v-btn:focus-visible,
+.v-field:focus-within,
+.v-selection-control:focus-within {
+  outline: 3px solid rgba(17, 17, 17, 0.24);
+  outline-offset: 2px;
+}
+
+.v-btn {
+  color: var(--ink-strong);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.v-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.v-btn--variant-text:hover,
+.v-btn--variant-tonal:hover {
+  background: var(--hover-strong) !important;
+  color: var(--ink-strong) !important;
+}
+
+.v-btn--variant-flat:hover {
+  background: #000000 !important;
+}
+
+.v-btn--variant-flat:focus-visible {
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.18) !important;
+}
+
+.v-field {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field) !important;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+  box-shadow: none !important;
+}
+
+.v-field--variant-solo {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+.v-field:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-card) !important;
+}
+
+.v-field:focus-within {
+  border-color: var(--line-focus);
+  background: var(--surface-card) !important;
+  box-shadow: 0 0 0 1px rgba(17, 17, 17, 0.16) !important;
+}
+
+.v-btn--variant-flat {
+  box-shadow: none !important;
+}
