@@ -11,7 +11,6 @@ import { appEnv } from '@/shared/env'
 type AuthSession = {
   clear: () => void | Promise<void>
   getAccessToken: () => string | null
-  hasRefreshToken: () => boolean
   refreshAccessToken: () => Promise<string>
 }
 
@@ -23,6 +22,7 @@ let authInterceptorsInstalled = false
 
 export const apiClient = axios.create({
   baseURL: appEnv.apiBaseUrl,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -87,7 +87,6 @@ export function installAuthInterceptors (session: AuthSession) {
         }
 
         return error.response?.status === 401 &&
-          session.hasRefreshToken() &&
           !String(error.response.config.url ?? '').includes('/auth/token')
       }
     }

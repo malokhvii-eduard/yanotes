@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 import { useAuthStore } from '@/features/auth/store'
 
@@ -49,16 +50,17 @@ const router = createRouter({
 
 router.beforeEach(to => {
   const authStore = useAuthStore()
+  const { initializing, isAuthenticated } = storeToRefs(authStore)
 
-  if (authStore.initializing) {
+  if (initializing.value) {
     return false
   }
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  if (to.meta.requiresAuth && !isAuthenticated.value) {
     return { name: 'login' }
   }
 
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
+  if (to.meta.guestOnly && isAuthenticated.value) {
     return { name: 'notes' }
   }
 

@@ -1,4 +1,6 @@
+import { storeToRefs } from 'pinia'
 import { useQueryCache } from '@pinia/colada'
+import type { Router } from 'vue-router'
 
 import { useAuthStore } from '@/features/auth/store'
 
@@ -17,37 +19,36 @@ function clearCache (queryCache: QueryCacheStore) {
 
 export function createAuthSession (
   authStore: AuthStore,
-  queryCache: QueryCacheStore
+  queryCache: QueryCacheStore,
+  router: Router
 ) {
-  function clear () {
+  const {
+    accessToken,
+    initializing
+  } = storeToRefs(authStore)
+
+  async function clear () {
     authStore.clearAuthState()
     clearCache(queryCache)
+
+    if (router.currentRoute.value.name !== 'login') {
+      await router.replace({ name: 'login' })
+    }
   }
 
   async function restore () {
-    authStore.setInitializing(true)
+    initializing.value = true
 
     try {
-      if (!authStore.accessToken) {
-        authStore.setCurrentUser(null)
-        return
+      if (!accessToken.value) {
+        await authStore.refreshAccessToken()
       }
 
       await authStore.fetchCurrentUser()
     } catch {
-      try {
-        if (!authStore.refreshToken) {
-          clear()
-          return
-        }
-
-        await authStore.refreshAccessToken()
-        await authStore.fetchCurrentUser()
-      } catch {
-        clear()
-      }
+      await clear()
     } finally {
-      authStore.setInitializing(false)
+      initializing.value = false
     }
   }
 
@@ -59,18 +60,17 @@ export function createAuthSession (
         await authStore.revokeRefreshToken()
       }
     } finally {
-      clear()
+      await clear()
     }
   }
 
   function getAccessToken () {
-    return authStore.accessToken
+    return accessToken.value
   }
 
   return {
     clear,
     getAccessToken,
-    hasRefreshToken: () => Boolean(authStore.refreshToken),
     logout,
     refreshAccessToken: () => authStore.refreshAccessToken(),
     restore

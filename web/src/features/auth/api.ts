@@ -29,24 +29,20 @@ export async function getCurrentUser () {
   return data
 }
 
-export async function refreshAccessToken (refreshToken: string) {
+export async function refreshAccessToken () {
   const { data } = await apiClient.post<Pick<AuthTokens, 'access'>>(
     '/auth/token/refresh',
-    {
-      refresh: refreshToken
-    },
+    undefined,
     skipAuthRefresh()
   )
 
   return data.access
 }
 
-export async function logout (refreshToken: string) {
+export async function logout () {
   await apiClient.post(
     '/auth/token/blacklist',
-    {
-      refresh: refreshToken
-    },
+    undefined,
     skipAuthRefresh()
   )
 }

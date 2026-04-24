@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue'
-import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
 import {
@@ -16,15 +15,11 @@ import type {
   User
 } from '@/features/auth/types'
 
-const TOKEN_STORAGE_KEY = 'yanotes.tokens'
-
 export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref<User | null>(null)
-  const tokens = useStorage<AuthTokens | null>(TOKEN_STORAGE_KEY, null)
+  const accessToken = ref<AuthTokens['access'] | null>(null)
   const initializing = ref(true)
 
-  const accessToken = computed(() => tokens.value?.access ?? null)
-  const refreshToken = computed(() => tokens.value?.refresh ?? null)
   const isAdmin = computed(() => currentUser.value?.is_staff === true)
   const isAuthenticated = computed(() => Boolean(accessToken.value && currentUser.value))
 
@@ -38,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function clearAuthState () {
     currentUser.value = null
-    tokens.value = null
+    accessToken.value = null
   }
 
   async function fetchCurrentUser () {
@@ -48,7 +43,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login (credentials: LoginCredentials) {
-    tokens.value = await loginApi(credentials)
+    const tokens = await loginApi(credentials)
+    accessToken.value = tokens.access
     await fetchCurrentUser()
   }
 
@@ -57,26 +53,14 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function refreshAccessToken () {
-    if (!refreshToken.value) {
-      throw new Error('Missing refresh token.')
-    }
-
-    const nextAccessToken = await refreshAccessTokenApi(refreshToken.value)
-
-    tokens.value = {
-      access: nextAccessToken,
-      refresh: refreshToken.value
-    }
+    const nextAccessToken = await refreshAccessTokenApi()
+    accessToken.value = nextAccessToken
 
     return nextAccessToken
   }
 
   async function revokeRefreshToken () {
-    if (!refreshToken.value) {
-      return
-    }
-
-    await logoutApi(refreshToken.value)
+    await logoutApi()
   }
 
   return {
@@ -89,7 +73,6 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     login,
     refreshAccessToken,
-    refreshToken,
     revokeRefreshToken,
     register,
     setCurrentUser,

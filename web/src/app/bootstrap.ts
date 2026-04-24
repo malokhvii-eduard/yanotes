@@ -20,7 +20,7 @@ export async function bootstrapApp () {
 
   const authStore = useAuthStore(pinia)
   const queryCache = useQueryCache(pinia)
-  const session = createAuthSession(authStore, queryCache)
+  const session = createAuthSession(authStore, queryCache, router)
 
   installAuthInterceptors(session)
 

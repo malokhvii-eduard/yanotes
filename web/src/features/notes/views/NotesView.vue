@@ -21,7 +21,7 @@ import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
 const authStore = useAuthStore()
 const queryCache = useQueryCache()
 const router = useRouter()
-const authSession = createAuthSession(authStore, queryCache)
+const authSession = createAuthSession(authStore, queryCache, router)
 
 const { currentUser, isAdmin } = storeToRefs(authStore)
 const filtersState = useFilters()
@@ -51,7 +51,6 @@ const list = reactive({
 
 async function logout () {
   await authSession.logout()
-  await router.push({ name: 'login' })
 }
 
 const session = reactive({
