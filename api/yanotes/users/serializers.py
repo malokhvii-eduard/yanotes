@@ -1,4 +1,4 @@
-from types import MappingProxyType
+from typing import ClassVar
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -49,10 +49,8 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff",
             "password",
         )
-        extra_kwargs = MappingProxyType(
-            {
-                "id": {"read_only": True},
-                "is_staff": {"read_only": True},
-                "password": {"write_only": True},
-            }
-        )
+        extra_kwargs: ClassVar[dict[str, dict[str, bool]]] = {
+            "id": {"read_only": True},
+            "is_staff": {"read_only": True},
+            "password": {"write_only": True},
+        }

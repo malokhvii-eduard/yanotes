@@ -1,4 +1,4 @@
-from types import MappingProxyType
+from typing import ClassVar
 
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
@@ -44,9 +44,7 @@ class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = "__all__"
-        extra_kwargs = MappingProxyType(
-            {
-                "created_at": {"read_only": True},
-                "updated_at": {"read_only": True},
-            }
-        )
+        extra_kwargs: ClassVar[dict[str, dict[str, bool]]] = {
+            "created_at": {"read_only": True},
+            "updated_at": {"read_only": True},
+        }
