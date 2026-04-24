@@ -142,7 +142,7 @@ CACHEOPS = {
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators/
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (  # noqa
+        "NAME": (
             "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
         ),
     },

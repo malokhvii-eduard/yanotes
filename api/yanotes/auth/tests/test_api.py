@@ -48,7 +48,7 @@ def test_given_invalid_credentials_when_logging_in_then_unauthorized(
         reverse("token"),
         {
             "username": user.username,
-            "password": "wrong-password",  # pragma: allowlist secret
+            "password": "wrong-password",  # pragma: allowlist secret # nosec B105
         },
     )
 

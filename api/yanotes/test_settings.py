@@ -12,7 +12,7 @@ os.environ.setdefault("DB_PASSWORD", "yanotes")
 os.environ.setdefault("CACHE_HOST", "localhost")
 
 from . import settings as base_settings
-from .settings import *  # noqa: F401,F403
+from .settings import *
 
 MIDDLEWARE = [
     middleware

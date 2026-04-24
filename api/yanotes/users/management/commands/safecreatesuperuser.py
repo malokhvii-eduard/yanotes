@@ -15,7 +15,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        User = get_user_model()  # noqa
+        User = get_user_model()
 
         if not User.objects.filter(username=options["username"]).exists():
             username = options["username"]

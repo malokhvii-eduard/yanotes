@@ -154,10 +154,10 @@ from .serializers import NoteSerializer
 )
 class NoteViewSet(viewsets.ModelViewSet):
     serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated, IsOwner | IsAdminUser]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["title", "content"]
-    ordering_fields = ["title", "updated_at"]
+    permission_classes = (IsAuthenticated, IsOwner | IsAdminUser)
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ("title", "content")
+    ordering_fields = ("title", "updated_at")
 
     def get_queryset(self):
         if self.request.user.is_staff:

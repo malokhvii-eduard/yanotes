@@ -8,65 +8,112 @@ ci:
   skip: [commitlint]
 
 repos:
+  # Auto fixes
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        name: fix trailing whitespace
       - id: end-of-file-fixer
+        name: fix end of file
+
+  # Style checks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
+    hooks:
+      - id: ruff
+        name: fix python imports
+        args: [--select, I, --fix]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
+    hooks:
+      - id: ruff-format
+        name: format python
+  - repo: local
+    hooks:
+      - id: web-format
+        name: format ts
+        entry: npm --prefix web run format
+        language: system
+        pass_filenames: false
+        files: ^web/.*\.(js|cjs|mjs|ts|tsx|vue)$
+
+  # File checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
       - id: check-json
+        name: check json
       - id: check-toml
-      - id: check-executables-have-shebangs
-      - id: check-added-large-files
-      - id: debug-statements
-        name: check for debug statements
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.2.0
-    hooks:
-      - id: detect-secrets
-        name: check for hardcoded secrets
-        exclude: docker-compose.*
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.31.1
-    hooks:
-      - id: markdownlint
-        name: check markdown
+        name: check toml
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.26.3
+    rev: v1.38.0
     hooks:
       - id: yamllint
         name: check yaml
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.48.0
+    hooks:
+      - id: markdownlint
+        name: check markdown
   - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.10.0
+    rev: v2.14.0
     hooks:
       - id: hadolint
         name: check Dockerfile
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.9.0
+
+  # Repo checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
     hooks:
-      - id: python-no-eval
-      - id: python-use-type-annotations
-        name: check that python type annotations not comments
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+      - id: check-executables-have-shebangs
+        name: check executables have shebangs
+      - id: check-added-large-files
+        name: check added large files
+      - id: debug-statements
+        name: check debug statements
+
+  # Security checks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
     hooks:
-      - id: ruff
-        name: sort python imports
-        args: [--select, I, --fix]
-      - id: ruff-format
-        name: format python
-      - id: ruff
-        name: check python
+      - id: detect-secrets
+        name: check hardcoded secrets
+        exclude: docker-compose.*
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.6
+    rev: 1.9.4
     hooks:
       - id: bandit
-        name: security audit for python
+        name: audit python security
         args: ["-c", "api/pyproject.toml"]
         additional_dependencies: ["bandit[toml]"]
-  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v7.0.1
+
+  # Code checks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
     hooks:
-      - id: commitlint
+      - id: ruff
+        name: check python
+  - repo: local
+    hooks:
+      - id: web-eslint
+        name: check ts
+        entry: npm --prefix web run lint
+        language: system
+        pass_filenames: false
+        files: ^web/.*\.(js|cjs|mjs|ts|tsx|vue)$
+      - id: web-typecheck
+        name: typecheck ts
+        entry: npm --prefix web run typecheck
+        language: system
+        pass_filenames: false
+        files: ^web/.*\.(js|cjs|mjs|ts|tsx|vue)$
+
+  # Commit checks
+  - repo: local
+    hooks:
+      - id: commitlint-local
         name: check commit message
+        entry: npx --no -- commitlint --edit
+        language: system
         stages: [commit-msg]
-        additional_dependencies: ['@commitlint/config-conventional']

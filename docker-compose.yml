@@ -1,8 +1,9 @@
+---
 x-common: &common
   restart: unless-stopped
 
 x-api-environment: &api-environment
-  ACCESS_TOKEN_LIFETIME: ${ACCESS_TOKEN_LIFETIME-5} # Minutes
+  ACCESS_TOKEN_LIFETIME: ${ACCESS_TOKEN_LIFETIME-5}  # Minutes
   CACHE_HOST: cache
   DB_HOST: "${DB_HOST-db}"
   DB_NAME: "${DB_NAME?}"
@@ -11,7 +12,7 @@ x-api-environment: &api-environment
   DB_USER: "${DB_USER?}"
   DEBUG: "${DEBUG-false}"
   PAGE_SIZE: "${PAGE_SIZE-50}"
-  REFRESH_TOKEN_LIFETIME: "${REFRESH_TOKEN_LIFETIME-60}" # Days
+  REFRESH_TOKEN_LIFETIME: "${REFRESH_TOKEN_LIFETIME-60}"  # Days
   SECRET_KEY: "${SECRET_KEY?}"
   SUPERUSER_EMAIL: "${SUPERUSER_EMAIL?}"
   SUPERUSER_PASSWORD: "${SUPERUSER_PASSWORD?}"

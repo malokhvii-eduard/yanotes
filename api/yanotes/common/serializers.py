@@ -1,5 +1,5 @@
 from rest_framework import serializers
 
 
-class ErrorSerializer(serializers.Serializer):  # noqa
+class ErrorSerializer(serializers.Serializer):
     detail = serializers.CharField()

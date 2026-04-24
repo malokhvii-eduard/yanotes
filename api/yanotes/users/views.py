@@ -107,7 +107,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        User = get_user_model()  # noqa
+        User = get_user_model()
         if self.request.user.is_staff:
             return User.objects.all()
 
