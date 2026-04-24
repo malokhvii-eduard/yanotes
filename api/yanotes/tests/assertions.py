@@ -57,7 +57,6 @@ def assert_paginated_response(payload, *, count, results_length=None):
         assert len(payload["results"]) == results_length
 
 
-def assert_token_pair_payload(payload):
-    assert set(payload) == {"access", "refresh"}
+def assert_access_token_payload(payload):
+    assert set(payload) == {"access"}
     assert payload["access"]
-    assert payload["refresh"]

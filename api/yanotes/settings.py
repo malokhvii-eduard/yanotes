@@ -42,6 +42,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # https://github.com/adamchainz/django-cors-headers
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 # https://docs.djangoproject.com/en/4.1/ref/applications/
@@ -192,17 +193,26 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "SWAGGER_UI_SETTINGS": {
+        "withCredentials": True,
+    },
     "REDOC_DIST": "SIDECAR",
     "TITLE": "YaNotes",
     "DESCRIPTION": (
         "YaNotes API is an HTTP API for simple note-taking app.\n\n"
         "### Authentication\n\n"
-        "Most of the API endpoints require to be authenticated as well as some level"
-        " of authorization to be used. YaNotes API uses JSON Web Token to manage"
-        " authentication and thus requires you to provide a token in the"
-        " **Authorization** header of each request with the **Bearer** authentication"
-        " mechanism.\n\n"
-        "Example:\n\n"
+        "Most API endpoints require an access token in the **Authorization** header"
+        " using the **Bearer** scheme.\n\n"
+        "Authentication flow:\n\n"
+        "1. Call `POST /auth/token` with user credentials.\n"
+        "2. Use the returned access token in the `Authorization: Bearer <token>`"
+        " header for authenticated endpoints.\n"
+        "3. The refresh token is stored in an **HttpOnly cookie** and is used by"
+        " `POST /auth/token/refresh` and `POST /auth/token/blacklist`.\n\n"
+        "Swagger UI is configured to send cookies with requests, so refresh and"
+        " logout can be tested directly from the docs after a successful login on"
+        " the same origin.\n\n"
+        "Bearer example:\n\n"
         "```Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"  # pragma: allowlist secret
         ".eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjYyM"  # pragma: allowlist secret
         "DY0NzcyLCJpYXQiOjE2NjIwNjQ0NzIsImp0aSI6ImNjNDY"  # pragma: allowlist secret
@@ -254,6 +264,10 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+REFRESH_COOKIE_NAME = env.str("REFRESH_COOKIE_NAME", default="refresh_token")
+REFRESH_COOKIE_PATH = env.str("REFRESH_COOKIE_PATH", default="/api/auth/")
+REFRESH_COOKIE_SECURE = env.bool("REFRESH_COOKIE_SECURE", default=not DEBUG)
+REFRESH_COOKIE_SAMESITE = env.str("REFRESH_COOKIE_SAMESITE", default="Lax")
 
 # Logging
 # https://docs.djangoproject.com/en/4.1/topics/logging/

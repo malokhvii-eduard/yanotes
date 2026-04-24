@@ -2,8 +2,8 @@ import pytest
 from django.urls import reverse
 
 from yanotes.tests.assertions import (
+    assert_access_token_payload,
     assert_error_response,
-    assert_token_pair_payload,
     assert_user_payload,
 )
 
@@ -35,7 +35,9 @@ def test_given_valid_credentials_when_logging_in_then_returns_tokens(
     )
 
     assert response.status_code == 200
-    assert_token_pair_payload(response.json())
+    assert_access_token_payload(response.json())
+    assert "refresh_token" in response.cookies
+    assert response.cookies["refresh_token"].value
 
 
 def test_given_invalid_credentials_when_logging_in_then_unauthorized(
@@ -82,25 +84,27 @@ def test_given_user_when_retrieving_me_then_returns_profile(
     assert_user_payload(response.json(), user=user)
 
 
-def test_given_valid_refresh_token_when_refreshing_then_rotates_tokens(
+def test_given_valid_refresh_cookie_when_refreshing_then_rotates_tokens(
     api_client,
     user,
     token_pair_for,
 ):
     tokens = token_pair_for(user)
+    api_client.cookies["refresh_token"] = tokens["refresh"]
 
     response = api_client.post(
         reverse("token_refresh"),
-        {"refresh": tokens["refresh"]},
+        {},
     )
 
     assert response.status_code == 200
     payload = response.json()
-    assert_token_pair_payload(payload)
-    assert payload["refresh"] != tokens["refresh"]
+    assert_access_token_payload(payload)
+    assert "refresh_token" in response.cookies
+    assert response.cookies["refresh_token"].value != tokens["refresh"]
 
 
-def test_given_missing_refresh_when_refreshing_then_bad_request(
+def test_given_missing_refresh_cookie_when_refreshing_then_bad_request(
     api_client,
 ):
     response = api_client.post(
@@ -118,9 +122,11 @@ def test_given_missing_refresh_when_refreshing_then_bad_request(
 def test_given_invalid_refresh_token_when_refreshing_then_unauthorized(
     api_client,
 ):
+    api_client.cookies["refresh_token"] = "invalid-token"  # nosec
+
     response = api_client.post(
         reverse("token_refresh"),
-        {"refresh": "invalid-token"},
+        {},
     )
 
     assert response.status_code == 401
@@ -133,14 +139,16 @@ def test_given_blacklisted_refresh_token_when_refreshing_then_unauthorized(
     token_pair_for,
 ):
     tokens = token_pair_for(user)
+    api_client.cookies["refresh_token"] = tokens["refresh"]
 
     blacklist_response = api_client.post(
         reverse("token_blacklist"),
-        {"refresh": tokens["refresh"]},
+        {},
     )
+    api_client.cookies["refresh_token"] = tokens["refresh"]
     refresh_response = api_client.post(
         reverse("token_refresh"),
-        {"refresh": tokens["refresh"]},
+        {},
     )
 
     assert blacklist_response.status_code == 200
@@ -148,7 +156,7 @@ def test_given_blacklisted_refresh_token_when_refreshing_then_unauthorized(
     assert_error_response(refresh_response.json())
 
 
-def test_given_missing_refresh_when_blacklisting_then_bad_request(
+def test_given_missing_refresh_cookie_when_blacklisting_then_bad_request(
     api_client,
 ):
     response = api_client.post(
@@ -161,3 +169,20 @@ def test_given_missing_refresh_when_blacklisting_then_bad_request(
     assert list(payload) == ["refresh"]
     assert isinstance(payload["refresh"], list)
     assert payload["refresh"]
+
+
+def test_given_refresh_cookie_when_blacklisting_then_clears_cookie(
+    api_client,
+    user,
+    token_pair_for,
+):
+    tokens = token_pair_for(user)
+    api_client.cookies["refresh_token"] = tokens["refresh"]
+
+    response = api_client.post(
+        reverse("token_blacklist"),
+        {},
+    )
+
+    assert response.status_code == 200
+    assert response.cookies["refresh_token"].value == ""
