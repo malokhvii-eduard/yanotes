@@ -7,7 +7,7 @@ name: CI
 
 env:
   PYTHON_VERSION: "3.10"
-  NODE_VERSION: "24"
+  NODE_VERSION: "24.14.0"
 
 jobs:
   pre-commit:
@@ -21,7 +21,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
       - name: Install frontend dependencies
         run: npm ci
         working-directory: web
