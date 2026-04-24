@@ -15,6 +15,44 @@
   gap: 2px;
 }
 
+.auth-header {
+  display: block;
+}
+
+.auth-copy {
+  min-width: 0;
+}
+
+.auth-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.auth-brand {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  margin-top: 4px;
+}
+
+.auth-brand svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.auth-brand rect {
+  fill: #fff;
+  stroke: #111111;
+  stroke-width: 2;
+}
+
+.auth-brand path {
+  fill: #111111;
+}
+
 .auth-link {
   font-weight: 600;
 }
@@ -84,5 +122,19 @@
 @media (max-width: 600px) {
   .auth-card {
     border-radius: var(--radius-ui) !important;
+  }
+
+  .auth-header {
+    display: block;
+  }
+
+  .auth-title-row {
+    gap: 12px;
+  }
+
+  .auth-brand {
+    width: 46px;
+    height: 46px;
+    margin-top: 2px;
   }
 }

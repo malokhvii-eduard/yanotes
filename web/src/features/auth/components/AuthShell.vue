@@ -36,13 +36,37 @@ const {
               elevation="0"
             >
               <v-card-text class="pa-6 pa-sm-8 auth-card__body">
-                <div class="auth-copy mb-7">
-                  <h1 class="auth-title mb-2">
-                    {{ title }}
-                  </h1>
-                  <p class="auth-subtitle">
-                    {{ subtitle }}
-                  </p>
+                <div class="auth-header mb-7">
+                  <div class="auth-copy">
+                    <div class="auth-title-row mb-2">
+                      <h1 class="auth-title">
+                        {{ title }}
+                      </h1>
+
+                      <div
+                        class="auth-brand notes-brand"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          viewBox="0 0 32 32"
+                          role="presentation"
+                        >
+                          <rect
+                            x="4"
+                            y="4"
+                            width="24"
+                            height="24"
+                            rx="3"
+                          />
+                          <path d="M11 22V10.5h2.1l5.2 6.6v-6.6H21V22h-2l-5.3-6.8V22z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <p class="auth-subtitle">
+                      {{ subtitle }}
+                    </p>
+                  </div>
                 </div>
 
                 <slot />
