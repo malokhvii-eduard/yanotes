@@ -14,7 +14,6 @@ import { useFilters } from '@/features/notes/composables/useFilters'
 import { useList } from '@/features/notes/composables/useList'
 import {
   formatNoteCount,
-  matchesNoteQuery,
   NOTE_SORT_OPTIONS
 } from '@/features/notes/helpers'
 import ConfirmDialog from '@/shared/ui/ConfirmDialog.vue'
@@ -30,6 +29,7 @@ const editorState = useEditor()
 const listState = useList({
   canManageOwners: isAdmin,
   isEditorOpen: editorState.isEditorOpen,
+  search: filtersState.searchQuery,
   sort: filtersState.sort
 })
 const actionsState = useActions(editorState, () => listState.refresh())
@@ -46,9 +46,6 @@ const actions = reactive(actionsState)
 const list = reactive({
   ...listState,
   error: computed(() => actionsState.error.value ?? listState.loadError.value),
-  filteredNotes: computed(() => {
-    return listState.notes.value.filter(note => matchesNoteQuery(note, filtersState.query.value))
-  }),
   isEmpty: computed(() => !listState.isLoading.value && listState.notes.value.length === 0)
 })
 
@@ -171,7 +168,7 @@ const session = reactive({
 
         <v-row v-if="!list.isLoading && !list.isEmpty">
           <v-col
-            v-for="note in list.filteredNotes"
+            v-for="note in list.notes"
             :key="note.id"
             cols="12"
             md="6"

@@ -7,6 +7,7 @@ type ListNotesParams = {
   limit: number
   offset: number
   ordering: NoteSort
+  search?: string
   signal?: AbortSignal
 }
 

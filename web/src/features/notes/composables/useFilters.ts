@@ -1,9 +1,11 @@
+import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
 import type { NoteSort, NoteSortField } from '@/features/notes/types'
 
 export function useFilters () {
   const query = ref('')
+  const searchQuery = refDebounced(query, 250)
   const isDescending = ref(true)
   const sortField = ref<NoteSortField>('updated_at')
 
@@ -26,6 +28,7 @@ export function useFilters () {
   return {
     isDescending,
     query,
+    searchQuery,
     setSortField,
     sort,
     sortField,

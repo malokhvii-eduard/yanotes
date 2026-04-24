@@ -12,6 +12,7 @@ import type { NoteSort } from '@/features/notes/types'
 type UseListOptions = {
   canManageOwners: MaybeRefOrGetter<boolean>
   isEditorOpen: MaybeRefOrGetter<boolean>
+  search: MaybeRefOrGetter<string>
   sort: MaybeRefOrGetter<NoteSort>
 }
 
@@ -21,7 +22,7 @@ export function useList (options: UseListOptions) {
   const isEditorOpen = computed(() => toValue(options.isEditorOpen))
   const canLoadOwners = computed(() => isEditorOpen.value && canManageOwners.value)
 
-  const notesQuery = useNotesInfiniteQuery(options.sort)
+  const notesQuery = useNotesInfiniteQuery(options.sort, options.search)
   const ownerQuery = useNoteOwnersInfiniteQuery(canLoadOwners)
 
   const hasLoadedNotes = computed(() => Boolean(notesQuery.data.value?.pages.length))
