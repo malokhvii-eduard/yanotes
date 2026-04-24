@@ -20,12 +20,18 @@ from .serializers import NoteSerializer
         operation_id="notes_list",
         summary="List notes",
         description=(
-            "List notes visible to the current user. Regular users receive only"
-            " their own notes. Administrators receive all notes.\n\n"
-            "Supports limit/offset pagination and ordering by `title` or"
-            " `updated_at`. Use a leading `-` for descending order. When multiple"
-            " notes have the same ordering value, results are ordered"
-            " deterministically by `id` in the same direction.\n\n"
+            "List notes visible to the current user.\n\n"
+            "Regular users receive only their own notes. Administrators receive"
+            " all notes.\n\n"
+            "Use `search` to perform a case-insensitive search across `title` and"
+            " `content`.\n\n"
+            "Supports limit/offset pagination.\n\n"
+            "Use `ordering` to sort by `title` or `updated_at`. Prefix with `-`"
+            " for descending order. When multiple notes have the same ordering"
+            " value, results are ordered deterministically by `id` in the same"
+            " direction.\n\n"
+            "`search` is applied before pagination, and can be combined with"
+            " `ordering`.\n\n"
             "**Access policy**: Authenticated"
         ),
         parameters=[
@@ -50,6 +56,12 @@ from .serializers import NoteSerializer
                     " descending order. Ties are resolved deterministically by `id`"
                     " in the same direction."
                 ),
+            ),
+            OpenApiParameter(
+                "search",
+                OpenApiTypes.STR,
+                OpenApiParameter.QUERY,
+                description="Search notes by `title` and `content`.",
             ),
         ],
         responses={
@@ -143,7 +155,8 @@ from .serializers import NoteSerializer
 class NoteViewSet(viewsets.ModelViewSet):
     serializer_class = NoteSerializer
     permission_classes = [IsAuthenticated, IsOwner | IsAdminUser]
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "content"]
     ordering_fields = ["title", "updated_at"]
 
     def get_queryset(self):

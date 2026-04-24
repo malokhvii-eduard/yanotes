@@ -94,6 +94,53 @@ def test_given_user_without_notes_when_listing_then_returns_empty(
     assert payload["results"] == []
 
 
+def test_given_search_query_then_returns_matching_notes(
+    user_client,
+    user,
+    note_factory,
+):
+    matching_title = note_factory(
+        owner=user, title="Alpha project", content="General note"
+    )
+    matching_content = note_factory(
+        owner=user, title="Meeting", content="Discuss alpha rollout"
+    )
+    note_factory(owner=user, title="Bravo project", content="General note")
+
+    response = user_client.get(
+        reverse("note-list"),
+        {"search": "alpha"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=2, results_length=2)
+    assert {item["id"] for item in payload["results"]} == {
+        matching_title.id,
+        matching_content.id,
+    }
+
+
+def test_given_search_query_then_returns_only_visible_notes(
+    user_client,
+    user,
+    user_factory,
+    note_factory,
+):
+    own_note = note_factory(owner=user, title="Alpha", content="Own note")
+    note_factory(owner=user_factory(), title="Alpha", content="Foreign note")
+
+    response = user_client.get(
+        reverse("note-list"),
+        {"search": "alpha"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert_paginated_response(payload, count=1, results_length=1)
+    assert [item["id"] for item in payload["results"]] == [own_note.id]
+
+
 def test_given_admin_when_listing_then_returns_all_notes(
     admin_client,
     admin_user,
