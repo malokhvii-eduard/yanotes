@@ -77,67 +77,79 @@ describe('router', () => {
     vi.restoreAllMocks()
   })
 
-  test('test_given_anonymous_when_accessing_notes_then_redirects_to_login', async () => {
-    const { authStore, router } = await createTestContext()
-    authStore.initializing = false
+  describe('when anonymous user accesses notes', () => {
+    test('should redirect to login', async () => {
+      const { authStore, router } = await createTestContext()
+      authStore.initializing = false
 
-    await navigateTo(router, '/')
+      await navigateTo(router, '/')
 
-    expect(router.currentRoute.value.name).toBe('login')
-    expect(router.currentRoute.value.path).toBe('/login')
+      expect(router.currentRoute.value.name).toBe('login')
+      expect(router.currentRoute.value.path).toBe('/login')
+    })
   })
 
-  test('test_given_authenticated_user_when_accessing_login_then_redirects_to_notes', async () => {
-    const { authStore, router } = await createTestContext()
-    authStore.initializing = false
-    authenticate(authStore)
+  describe('when authenticated user accesses login', () => {
+    test('should redirect to notes', async () => {
+      const { authStore, router } = await createTestContext()
+      authStore.initializing = false
+      authenticate(authStore)
 
-    await navigateTo(router, '/login')
+      await navigateTo(router, '/login')
 
-    expect(router.currentRoute.value.name).toBe('notes')
-    expect(router.currentRoute.value.path).toBe('/')
+      expect(router.currentRoute.value.name).toBe('notes')
+      expect(router.currentRoute.value.path).toBe('/')
+    })
   })
 
-  test('test_given_authenticated_user_when_accessing_register_then_redirects_to_notes', async () => {
-    const { authStore, router } = await createTestContext()
-    authStore.initializing = false
-    authenticate(authStore)
+  describe('when authenticated user accesses register', () => {
+    test('should redirect to notes', async () => {
+      const { authStore, router } = await createTestContext()
+      authStore.initializing = false
+      authenticate(authStore)
 
-    await navigateTo(router, '/register')
+      await navigateTo(router, '/register')
 
-    expect(router.currentRoute.value.name).toBe('notes')
-    expect(router.currentRoute.value.path).toBe('/')
+      expect(router.currentRoute.value.name).toBe('notes')
+      expect(router.currentRoute.value.path).toBe('/')
+    })
   })
 
-  test('test_given_initializing_session_when_navigating_then_cancels_navigation', async () => {
-    const { authStore, router } = await createTestContext()
-    authStore.initializing = true
+  describe('when session is initializing', () => {
+    test('should cancel navigation', async () => {
+      const { authStore, router } = await createTestContext()
+      authStore.initializing = true
 
-    const failure = await router.push('/login')
+      const failure = await router.push('/login')
 
-    expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
-    expect(router.currentRoute.value.name).toBeUndefined()
-    expect(router.currentRoute.value.path).toBe('/')
-    expect(document.title).toBe('YaNotes')
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
+      expect(router.currentRoute.value.name).toBeUndefined()
+      expect(router.currentRoute.value.path).toBe('/')
+      expect(document.title).toBe('YaNotes')
+    })
   })
 
-  test('test_given_unknown_route_when_accessing_then_redirects_to_notes', async () => {
-    const { authStore, router } = await createTestContext()
-    authStore.initializing = false
-    authenticate(authStore)
+  describe('when unknown route is accessed', () => {
+    test('should redirect to notes', async () => {
+      const { authStore, router } = await createTestContext()
+      authStore.initializing = false
+      authenticate(authStore)
 
-    await navigateTo(router, '/missing-page')
+      await navigateTo(router, '/missing-page')
 
-    expect(router.currentRoute.value.name).toBe('notes')
-    expect(router.currentRoute.value.path).toBe('/')
+      expect(router.currentRoute.value.name).toBe('notes')
+      expect(router.currentRoute.value.path).toBe('/')
+    })
   })
 
-  test('test_given_login_route_when_navigation_finishes_then_sets_document_title', async () => {
-    const { authStore, router } = await createTestContext()
-    authStore.initializing = false
+  describe('when navigation finishes on login route', () => {
+    test('should set document title', async () => {
+      const { authStore, router } = await createTestContext()
+      authStore.initializing = false
 
-    await navigateTo(router, '/login')
+      await navigateTo(router, '/login')
 
-    expect(document.title).toBe('Sign in • YaNotes')
+      expect(document.title).toBe('Sign in • YaNotes')
+    })
   })
 })
