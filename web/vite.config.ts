@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     test: {
+      environment: 'happy-dom',
       coverage: {
         exclude: [
           'src/**/*.d.ts',

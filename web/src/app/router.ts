@@ -67,7 +67,11 @@ router.beforeEach(to => {
   return true
 })
 
-router.afterEach(to => {
+router.afterEach((to, _from, failure) => {
+  if (failure) {
+    return
+  }
+
   const pageTitle = typeof to.meta.title === 'string' ? to.meta.title : 'YaNotes'
   document.title = pageTitle === 'YaNotes' ? pageTitle : `${pageTitle} • YaNotes`
 })
