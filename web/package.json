@@ -9,6 +9,8 @@
     "format": "eslint . --fix --ext .js,.cjs,.mjs,.ts,.tsx,.vue",
     "lint": "eslint . --ext .js,.cjs,.mjs,.ts,.tsx,.vue",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
@@ -40,6 +42,7 @@
     "typescript": "~6.0.2",
     "vite": "^8.0.9",
     "vite-plugin-vuetify": "^2.1.3",
+    "vitest": "^4.1.5",
     "vue-tsc": "^3.2.7"
   }
 }
