@@ -1,5 +1,6 @@
 import axios, {
   AxiosHeaders,
+  type AxiosInstance,
   type InternalAxiosRequestConfig
 } from 'axios'
 import createAuthRefresh, {
@@ -18,7 +19,7 @@ type HeaderCarrier = {
   headers?: InternalAxiosRequestConfig['headers']
 }
 
-let authInterceptorsInstalled = false
+const installedAuthClients = new WeakSet<AxiosInstance>()
 
 export const apiClient = axios.create({
   baseURL: appEnv.apiBaseUrl,
@@ -48,14 +49,17 @@ export function skipAuthRefresh (
   } as AxiosAuthRefreshRequestConfig
 }
 
-export function installAuthInterceptors (session: AuthSession) {
-  if (authInterceptorsInstalled) {
+export function installAuthInterceptorsOnClient (
+  client: AxiosInstance,
+  session: AuthSession
+) {
+  if (installedAuthClients.has(client)) {
     return
   }
 
-  authInterceptorsInstalled = true
+  installedAuthClients.add(client)
 
-  apiClient.interceptors.request.use(config => {
+  client.interceptors.request.use(config => {
     const accessToken = session.getAccessToken()
 
     if (accessToken) {
@@ -66,7 +70,7 @@ export function installAuthInterceptors (session: AuthSession) {
   })
 
   createAuthRefresh(
-    apiClient,
+    client,
     async failedRequest => {
       try {
         const accessToken = await session.refreshAccessToken()
@@ -91,4 +95,8 @@ export function installAuthInterceptors (session: AuthSession) {
       }
     }
   )
+}
+
+export function installAuthInterceptors (session: AuthSession) {
+  installAuthInterceptorsOnClient(apiClient, session)
 }
