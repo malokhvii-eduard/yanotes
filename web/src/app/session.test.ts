@@ -6,6 +6,14 @@ import { useAuthStore } from '@/features/auth/store'
 
 import { createAuthSession } from './session'
 
+vi.mock('@/features/auth/api', () => ({
+  getCurrentUser: vi.fn(),
+  login: vi.fn(),
+  logout: vi.fn(),
+  refreshAccessToken: vi.fn(),
+  registerUser: vi.fn()
+}))
+
 type QueryCacheEntry = {
   key: string[]
 }
