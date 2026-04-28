@@ -160,6 +160,14 @@ function createTestContext (
   }
 }
 
+function triggerNotesIntersection (isIntersecting: boolean) {
+  observer.callback?.([
+    {
+      isIntersecting
+    } as IntersectionObserverEntry
+  ])
+}
+
 describe('useList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -225,6 +233,73 @@ describe('useList', () => {
 
       expect(list.isLoading.value).toBe(false)
       expect(list.isLoadingMore.value).toBe(true)
+    })
+  })
+
+  describe('when load more anchor intersects with more notes available', () => {
+    test('should load next notes page', () => {
+      const { list, notesQuery } = createTestContext({
+        notesQuery: createInfiniteQueryMock<Note>({
+          data: createPages([createNote(1)], { next: '/notes?offset=1' }),
+          hasNextPage: true
+        })
+      })
+
+      list.setLoadMoreAnchor(document.createElement('div'))
+      triggerNotesIntersection(true)
+
+      expect(notesQuery.loadNextPage).toHaveBeenCalledWith({
+        cancelRefetch: false
+      })
+    })
+  })
+
+  describe('when load more anchor does not intersect', () => {
+    test('should skip loading next notes page', () => {
+      const { list, notesQuery } = createTestContext({
+        notesQuery: createInfiniteQueryMock<Note>({
+          data: createPages([createNote(1)], { next: '/notes?offset=1' }),
+          hasNextPage: true
+        })
+      })
+
+      list.setLoadMoreAnchor(document.createElement('div'))
+      triggerNotesIntersection(false)
+
+      expect(notesQuery.loadNextPage).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when next notes page cannot be loaded', () => {
+    test('should skip loading next notes page', () => {
+      const { list, notesQuery } = createTestContext({
+        notesQuery: createInfiniteQueryMock<Note>({
+          data: createPages([createNote(1)]),
+          hasNextPage: false
+        })
+      })
+
+      list.setLoadMoreAnchor(document.createElement('div'))
+      triggerNotesIntersection(true)
+
+      expect(notesQuery.loadNextPage).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when notes are already loading more', () => {
+    test('should skip loading next notes page', () => {
+      const { list, notesQuery } = createTestContext({
+        notesQuery: createInfiniteQueryMock<Note>({
+          data: createPages([createNote(1)], { next: '/notes?offset=1' }),
+          hasNextPage: true,
+          isLoading: true
+        })
+      })
+
+      list.setLoadMoreAnchor(document.createElement('div'))
+      triggerNotesIntersection(true)
+
+      expect(notesQuery.loadNextPage).not.toHaveBeenCalled()
     })
   })
 
