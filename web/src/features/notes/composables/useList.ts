@@ -1,35 +1,69 @@
 import { computed, ref, toValue, watch, type ComponentPublicInstance, type MaybeRefOrGetter } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
 
-import { useNoteOwnersInfiniteQuery, useNotesInfiniteQuery } from '@/features/notes/queries'
+import {
+  useNoteOwnerQuery,
+  useNoteOwnersInfiniteQuery,
+  useNotesInfiniteQuery
+} from '@/features/notes/queries'
 import { getErrorMessage } from '@/shared/errors'
 import {
   flattenOffsetPages,
   getOffsetPaginationTotal
 } from '@/shared/api'
+import type { User } from '@/features/auth/types'
 import type { NoteSort } from '@/features/notes/types'
 
 type UseListOptions = {
   canManageOwners: MaybeRefOrGetter<boolean>
   isEditorOpen: MaybeRefOrGetter<boolean>
+  ownerId: MaybeRefOrGetter<number | undefined>
   search: MaybeRefOrGetter<string>
   sort: MaybeRefOrGetter<NoteSort>
+}
+
+function createPendingOwner (ownerId: number): User {
+  return {
+    email: '',
+    first_name: '',
+    id: ownerId,
+    is_staff: false,
+    last_name: '',
+    username: 'Loading owner...'
+  }
 }
 
 export function useList (options: UseListOptions) {
   const loadMoreAnchor = ref<HTMLElement | null>(null)
   const canManageOwners = computed(() => toValue(options.canManageOwners))
   const isEditorOpen = computed(() => toValue(options.isEditorOpen))
+  const ownerId = computed(() => toValue(options.ownerId))
   const canLoadOwners = computed(() => isEditorOpen.value && canManageOwners.value)
 
   const notesQuery = useNotesInfiniteQuery(options.sort, options.search)
   const ownerQuery = useNoteOwnersInfiniteQuery(canLoadOwners)
+  const selectedOwnerQuery = useNoteOwnerQuery(ownerId, computed(() => (
+    canLoadOwners.value &&
+    typeof ownerId.value === 'number'
+  )))
 
   const hasLoadedNotes = computed(() => Boolean(notesQuery.data.value?.pages.length))
   const hasMoreNotes = computed(() => notesQuery.hasNextPage.value)
   const notes = computed(() => flattenOffsetPages(notesQuery.data.value))
   const total = computed(() => getOffsetPaginationTotal(notesQuery.data.value))
-  const owners = computed(() => flattenOffsetPages(ownerQuery.data.value))
+  const owners = computed(() => {
+    const paginatedOwners = flattenOffsetPages(ownerQuery.data.value)
+    const selectedOwner = selectedOwnerQuery.data.value
+
+    if (!ownerId.value || paginatedOwners.some(owner => owner.id === ownerId.value)) {
+      return paginatedOwners
+    }
+
+    return [
+      selectedOwner ?? createPendingOwner(ownerId.value),
+      ...paginatedOwners
+    ]
+  })
   const isLoading = computed(() => notesQuery.isPending.value && !hasLoadedNotes.value)
   const isLoadingMore = computed(() => notesQuery.isLoading.value && !notesQuery.isPending.value)
   const isLoadingMoreOwners = computed(() => ownerQuery.isLoading.value && !ownerQuery.isPending.value)

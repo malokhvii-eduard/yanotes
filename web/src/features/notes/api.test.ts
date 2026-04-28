@@ -7,6 +7,7 @@ import type { PaginatedResponse } from '@/shared/api/types'
 import {
   createNote,
   deleteNote,
+  getOwner,
   listNotes,
   listOwners,
   updateNote
@@ -145,6 +146,18 @@ describe('notesApi', () => {
         },
         signal
       })
+    })
+  })
+
+  describe('when getting note owner', () => {
+    test('should get owner by id', async () => {
+      vi.mocked(apiClient.get).mockResolvedValue({
+        data: owner
+      })
+
+      await expect(getOwner(owner.id)).resolves.toEqual(owner)
+
+      expect(apiClient.get).toHaveBeenCalledWith('/users/1')
     })
   })
 })

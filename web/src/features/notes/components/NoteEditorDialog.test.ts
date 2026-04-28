@@ -371,6 +371,8 @@ describe('NoteEditorDialog', () => {
         showOwnerSelect: true
       })
 
+      expect(wrapper.find('.note-editor-dialog__owner-more').text()).toBe('More')
+
       await wrapper.find('.note-editor-dialog__owner-more').trigger('click')
 
       expect(wrapper.emitted('fetch-more-owners')).toHaveLength(1)

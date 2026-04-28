@@ -52,3 +52,8 @@ export async function listOwners (params: ListOwnersParams) {
 
   return data
 }
+
+export async function getOwner (ownerId: number) {
+  const { data } = await apiClient.get<User>(`/users/${ownerId}`)
+  return data
+}

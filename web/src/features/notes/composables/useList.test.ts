@@ -2,6 +2,7 @@ import { nextTick, ref } from 'vue'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import {
+  useNoteOwnerQuery,
   useNoteOwnersInfiniteQuery,
   useNotesInfiniteQuery
 } from '@/features/notes/queries'
@@ -25,6 +26,7 @@ vi.mock('@vueuse/core', () => ({
 }))
 
 vi.mock('@/features/notes/queries', () => ({
+  useNoteOwnerQuery: vi.fn(),
   useNoteOwnersInfiniteQuery: vi.fn(),
   useNotesInfiniteQuery: vi.fn()
 }))
@@ -112,6 +114,16 @@ function createInfiniteQueryMock<TItem> (
   }
 }
 
+function createQueryMock<TItem> (
+  options: {
+    data?: TItem
+  } = {}
+) {
+  return {
+    data: ref(options.data)
+  }
+}
+
 function asNotesQuery (
   query: ReturnType<typeof createInfiniteQueryMock<Note>>
 ) {
@@ -124,12 +136,20 @@ function asOwnersQuery (
   return query as unknown as ReturnType<typeof useNoteOwnersInfiniteQuery>
 }
 
+function asOwnerQuery (
+  query: ReturnType<typeof createQueryMock<User>>
+) {
+  return query as unknown as ReturnType<typeof useNoteOwnerQuery>
+}
+
 function createTestContext (
   options: {
     canManageOwners?: boolean
     isEditorOpen?: boolean
     notesQuery?: ReturnType<typeof createInfiniteQueryMock<Note>>
+    ownerId?: number
     ownerQuery?: ReturnType<typeof createInfiniteQueryMock<User>>
+    selectedOwnerQuery?: ReturnType<typeof createQueryMock<User>>
     search?: string
     sort?: NoteSort
   } = {}
@@ -138,15 +158,19 @@ function createTestContext (
 
   const notesQuery = options.notesQuery ?? createInfiniteQueryMock<Note>()
   const ownerQuery = options.ownerQuery ?? createInfiniteQueryMock<User>()
+  const selectedOwnerQuery = options.selectedOwnerQuery ?? createQueryMock<User>()
 
   vi.mocked(useNotesInfiniteQuery).mockReturnValue(asNotesQuery(notesQuery))
   vi.mocked(useNoteOwnersInfiniteQuery).mockReturnValue(asOwnersQuery(ownerQuery))
+  vi.mocked(useNoteOwnerQuery).mockReturnValue(asOwnerQuery(selectedOwnerQuery))
 
   const canManageOwners = ref(options.canManageOwners ?? false)
   const isEditorOpen = ref(options.isEditorOpen ?? false)
+  const ownerId = ref(options.ownerId)
   const list = useList({
     canManageOwners,
     isEditorOpen,
+    ownerId,
     search: ref(options.search ?? ''),
     sort: ref(options.sort ?? '-updated_at')
   })
@@ -156,6 +180,7 @@ function createTestContext (
     isEditorOpen,
     list,
     notesQuery,
+    ownerId,
     ownerQuery
   }
 }
@@ -334,6 +359,79 @@ describe('useList', () => {
       expect(list.owners.value).toEqual(owners)
       expect(list.showOwnerSelect.value).toBe(true)
       expect(list.hasMoreOwners.value).toBe(true)
+    })
+  })
+
+  describe('when selected note owner is not in the owner page yet', () => {
+    test('should include loaded selected owner before paginated owners', () => {
+      const selectedOwner = createOwner(7)
+      const owners = [
+        createOwner(1),
+        createOwner(2)
+      ]
+      const { list } = createTestContext({
+        canManageOwners: true,
+        isEditorOpen: true,
+        ownerId: selectedOwner.id,
+        ownerQuery: createInfiniteQueryMock<User>({
+          data: createPages(owners),
+          status: 'success'
+        }),
+        selectedOwnerQuery: createQueryMock({
+          data: selectedOwner
+        })
+      })
+
+      expect(list.owners.value).toEqual([
+        selectedOwner,
+        ...owners
+      ])
+    })
+  })
+
+  describe('when selected note owner is loading', () => {
+    test('should include pending selected owner instead of exposing owner id', () => {
+      const owners = [
+        createOwner(1),
+        createOwner(2)
+      ]
+      const { list } = createTestContext({
+        canManageOwners: true,
+        isEditorOpen: true,
+        ownerId: 7,
+        ownerQuery: createInfiniteQueryMock<User>({
+          data: createPages(owners),
+          status: 'success'
+        })
+      })
+
+      expect(list.owners.value[0]).toMatchObject({
+        id: 7,
+        username: 'Loading owner...'
+      })
+    })
+  })
+
+  describe('when selected note owner is already loaded in owner page', () => {
+    test('should not duplicate selected owner', () => {
+      const owners = [
+        createOwner(1),
+        createOwner(7)
+      ]
+      const { list } = createTestContext({
+        canManageOwners: true,
+        isEditorOpen: true,
+        ownerId: 7,
+        ownerQuery: createInfiniteQueryMock<User>({
+          data: createPages(owners),
+          status: 'success'
+        }),
+        selectedOwnerQuery: createQueryMock({
+          data: createOwner(7)
+        })
+      })
+
+      expect(list.owners.value).toEqual(owners)
     })
   })
 

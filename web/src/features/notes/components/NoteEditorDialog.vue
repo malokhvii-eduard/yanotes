@@ -178,7 +178,7 @@ const submit = handleSubmit(values => {
                     @mousedown.prevent
                     @click.stop="emit('fetch-more-owners')"
                   >
-                    Load more
+                    More
                   </v-btn>
                 </div>
               </template>

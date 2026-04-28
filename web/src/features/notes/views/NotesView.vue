@@ -29,6 +29,7 @@ const editorState = useEditor()
 const listState = useList({
   canManageOwners: isAdmin,
   isEditorOpen: editorState.isEditorOpen,
+  ownerId: computed(() => editorState.activeNote.value?.owner ?? editorState.draftNote.value?.owner),
   search: filtersState.searchQuery,
   sort: filtersState.sort
 })

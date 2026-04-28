@@ -4,12 +4,16 @@ import { toValue } from 'vue'
 import {
   createNote,
   deleteNote,
+  getOwner,
   listNotes,
+  listOwners,
   updateNote
 } from './api'
 import {
   useCreateNoteMutation,
   useDeleteNoteMutation,
+  useNoteOwnerQuery,
+  useNoteOwnersInfiniteQuery,
   useNotesInfiniteQuery,
   useUpdateNoteMutation
 } from './queries'
@@ -22,6 +26,7 @@ const queryCache = vi.hoisted(() => ({
 
 vi.mock('@pinia/colada', () => ({
   useMutation: vi.fn(options => options),
+  useQuery: vi.fn(options => options),
   useQueryCache: () => queryCache
 }))
 
@@ -32,6 +37,7 @@ vi.mock('@/shared/api', () => ({
 vi.mock('./api', () => ({
   createNote: vi.fn(),
   deleteNote: vi.fn(),
+  getOwner: vi.fn(),
   listNotes: vi.fn(),
   listOwners: vi.fn(),
   updateNote: vi.fn()
@@ -154,6 +160,55 @@ describe('notesInfiniteQuery', () => {
         ordering: '-updated_at',
         search: undefined
       })
+    })
+  })
+})
+
+describe('noteOwnersInfiniteQuery', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('when owners query is created', () => {
+    test('should request paginated owners while enabled', () => {
+      useNoteOwnersInfiniteQuery(true)
+
+      const options = vi.mocked(useOffsetInfiniteQuery).mock.calls[0]?.[0]
+
+      expect(toValue(options?.enabled)).toBe(true)
+      expect(toValue(options?.key)).toEqual(['note-owners'])
+      expect(options?.request).toBe(listOwners)
+    })
+  })
+})
+
+describe('noteOwnerQuery', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('when selected owner query is created', () => {
+    test('should get owner by id with selected owner query key', async () => {
+      const query = useNoteOwnerQuery(7, true) as unknown as {
+        enabled: boolean
+        key: () => unknown[]
+        query: () => Promise<unknown>
+      }
+
+      vi.mocked(getOwner).mockResolvedValue({
+        email: 'owner@example.com',
+        first_name: 'Owner',
+        id: 7,
+        is_staff: false,
+        last_name: 'User',
+        username: 'owner-user'
+      })
+
+      await query.query()
+
+      expect(toValue(query.enabled)).toBe(true)
+      expect(query.key()).toEqual(['note-owner', 7])
+      expect(getOwner).toHaveBeenCalledWith(7)
     })
   })
 })

@@ -1,9 +1,10 @@
-import { useMutation, useQueryCache } from '@pinia/colada'
+import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { toValue, type MaybeRefOrGetter } from 'vue'
 
 import {
   createNote,
   deleteNote,
+  getOwner,
   listOwners,
   listNotes,
   updateNote
@@ -46,6 +47,17 @@ export function useNoteOwnersInfiniteQuery (enabled: MaybeRefOrGetter<boolean>) 
     key: ['note-owners'],
     pageSize: appEnv.noteOwnersPageSize,
     request: listOwners
+  })
+}
+
+export function useNoteOwnerQuery (
+  ownerId: MaybeRefOrGetter<number | undefined>,
+  enabled: MaybeRefOrGetter<boolean>
+) {
+  return useQuery({
+    enabled,
+    key: () => ['note-owner', toValue(ownerId) ?? null],
+    query: () => getOwner(toValue(ownerId) as number)
   })
 }
 
