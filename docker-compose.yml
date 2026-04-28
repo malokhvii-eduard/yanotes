@@ -30,16 +30,16 @@ services:
       - --entrypoints.http.address=:80
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-    ports:
-      - "80:80/tcp"
-      - "8080:8080/tcp"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       api:
         condition: service_healthy
       web:
         condition: service_healthy
+    ports:
+      - "80:80/tcp"
+      - "8080:8080/tcp"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
       test: traefik healthcheck --ping
       interval: 10s
@@ -49,7 +49,7 @@ services:
 
   web:
     <<: *common
-    image: yanotes/web
+    image: "ghcr.io/malokhvii-eduard/yanotes/web:${WEB_VERSION-latest}"
     build: web
     depends_on:
       api:
@@ -62,7 +62,7 @@ services:
 
   api:
     <<: *common
-    image: yanotes/api
+    image: "ghcr.io/malokhvii-eduard/yanotes/api:${API_VERSION-latest}"
     build: api
     environment: *api-environment
     depends_on:
@@ -80,7 +80,7 @@ services:
       traefik.http.routers.api.middlewares: api_compress
 
   migrations:
-    image: yanotes/api
+    image: "ghcr.io/malokhvii-eduard/yanotes/api:${API_VERSION-latest}"
     build: api
     restart: "no"
     entrypoint: ["python", "manage.py"]
