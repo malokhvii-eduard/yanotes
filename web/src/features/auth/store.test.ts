@@ -3,10 +3,13 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import {
   getCurrentUser,
-  login as loginApi
+  login as loginApi,
+  logout as logoutApi,
+  refreshAccessToken,
+  registerUser
 } from './api'
 import { useAuthStore } from './store'
-import type { LoginCredentials, User } from './types'
+import type { LoginCredentials, RegisterPayload, User } from './types'
 
 vi.mock('./api', () => ({
   getCurrentUser: vi.fn(),
@@ -28,6 +31,14 @@ const user: User = {
 const credentials: LoginCredentials = {
   password: 'passphrase', // pragma: allowlist secret
   username: 'test-user'
+}
+
+const registerPayload: RegisterPayload = {
+  email: 'new-user@example.com',
+  first_name: 'New',
+  last_name: 'User',
+  password: 'passphrase', // pragma: allowlist secret
+  username: 'new-user'
 }
 
 function createTestContext () {
@@ -90,6 +101,89 @@ describe('authStore', () => {
       expect(authStore.accessToken).toBe('access-token')
       expect(authStore.currentUser).toBeNull()
       expect(authStore.isAuthenticated).toBe(false)
+    })
+  })
+
+  describe('when current user is fetched directly', () => {
+    test('should store and return current user', async () => {
+      const { authStore } = createTestContext()
+      vi.mocked(getCurrentUser).mockResolvedValue(user)
+
+      await expect(authStore.fetchCurrentUser()).resolves.toEqual(user)
+
+      expect(authStore.currentUser).toEqual(user)
+    })
+  })
+
+  describe('when admin user is stored', () => {
+    test('should expose admin state', () => {
+      const { authStore } = createTestContext()
+
+      authStore.setCurrentUser({
+        ...user,
+        is_staff: true
+      })
+
+      expect(authStore.isAdmin).toBe(true)
+    })
+  })
+
+  describe('when initializing state changes', () => {
+    test('should update initializing flag', () => {
+      const { authStore } = createTestContext()
+
+      authStore.setInitializing(false)
+
+      expect(authStore.initializing).toBe(false)
+    })
+  })
+
+  describe('when auth state is cleared', () => {
+    test('should clear user and access token', () => {
+      const { authStore } = createTestContext()
+      authStore.accessToken = 'access-token'
+      authStore.setCurrentUser(user)
+
+      authStore.clearAuthState()
+
+      expect(authStore.accessToken).toBeNull()
+      expect(authStore.currentUser).toBeNull()
+      expect(authStore.isAuthenticated).toBe(false)
+    })
+  })
+
+  describe('when user registers', () => {
+    test('should register user without changing auth state', async () => {
+      const { authStore } = createTestContext()
+      vi.mocked(registerUser).mockResolvedValue(user)
+
+      await authStore.register(registerPayload)
+
+      expect(registerUser).toHaveBeenCalledWith(registerPayload)
+      expect(authStore.accessToken).toBeNull()
+      expect(authStore.currentUser).toBeNull()
+    })
+  })
+
+  describe('when access token is refreshed', () => {
+    test('should store and return refreshed access token', async () => {
+      const { authStore } = createTestContext()
+      vi.mocked(refreshAccessToken).mockResolvedValue('refreshed-token')
+
+      await expect(authStore.refreshAccessToken()).resolves.toBe('refreshed-token')
+
+      expect(authStore.accessToken).toBe('refreshed-token')
+    })
+  })
+
+  describe('when refresh token is revoked', () => {
+    test('should logout through api', async () => {
+      const { authStore } = createTestContext()
+      vi.mocked(logoutApi).mockResolvedValue()
+
+      await authStore.revokeRefreshToken()
+
+      expect(logoutApi).toHaveBeenCalledOnce()
     })
   })
 })
