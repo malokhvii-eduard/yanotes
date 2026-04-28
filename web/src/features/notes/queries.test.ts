@@ -1,16 +1,20 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { toValue } from 'vue'
 
 import {
   createNote,
   deleteNote,
+  listNotes,
   updateNote
 } from './api'
 import {
   useCreateNoteMutation,
   useDeleteNoteMutation,
+  useNotesInfiniteQuery,
   useUpdateNoteMutation
 } from './queries'
 import type { Note, NoteInput } from './types'
+import { useOffsetInfiniteQuery } from '@/shared/api'
 
 const queryCache = vi.hoisted(() => ({
   invalidateQueries: vi.fn()
@@ -115,6 +119,41 @@ describe('noteMutations', () => {
       await expectNotesInvalidation(mutation.onSuccess)
 
       expect(deleteNote).toHaveBeenCalledWith(note.id)
+    })
+  })
+})
+
+describe('notesInfiniteQuery', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('when sort and search filters are set', () => {
+    test('should pass filters to query key and request params', () => {
+      useNotesInfiniteQuery('-title', 'release')
+
+      const options = vi.mocked(useOffsetInfiniteQuery).mock.calls[0]?.[0]
+
+      expect(toValue(options?.key)).toEqual(['notes', '-title', 'release'])
+      expect(toValue(options?.params)).toEqual({
+        ordering: '-title',
+        search: 'release'
+      })
+      expect(options?.request).toBe(listNotes)
+    })
+  })
+
+  describe('when search filter is empty', () => {
+    test('should omit search from request params', () => {
+      useNotesInfiniteQuery('-updated_at', '')
+
+      const options = vi.mocked(useOffsetInfiniteQuery).mock.calls[0]?.[0]
+
+      expect(toValue(options?.key)).toEqual(['notes', '-updated_at', ''])
+      expect(toValue(options?.params)).toEqual({
+        ordering: '-updated_at',
+        search: undefined
+      })
     })
   })
 })
