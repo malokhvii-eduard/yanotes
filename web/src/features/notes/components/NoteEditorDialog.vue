@@ -91,6 +91,9 @@ watch(
 )
 
 function closeDialog () {
+  resetForm({
+    values: createInitialValues()
+  })
   model.value = false
 }
 
@@ -191,7 +194,9 @@ const submit = handleSubmit(values => {
         <v-spacer />
         <v-btn
           class="note-editor-dialog__cancel"
+          type="button"
           variant="text"
+          @mousedown.prevent
           @click="closeDialog"
         >
           Close
@@ -199,6 +204,7 @@ const submit = handleSubmit(values => {
         <v-btn
           class="note-editor-dialog__submit"
           color="primary"
+          type="button"
           :loading="isSaving"
           @click="submit"
         >

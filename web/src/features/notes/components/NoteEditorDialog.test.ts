@@ -344,6 +344,20 @@ describe('NoteEditorDialog', () => {
     })
   })
 
+  describe('when dialog is closed with invalid draft', () => {
+    test('should close without validating fields', async () => {
+      const wrapper = mountNoteEditorDialog()
+
+      await wrapper.find('input').setValue('   ')
+      await wrapper.find('.note-editor-dialog__cancel').trigger('mousedown')
+      await wrapper.find('.note-editor-dialog__cancel').trigger('click')
+
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false])
+      expect(wrapper.text()).not.toContain('Title is required')
+      expect(wrapper.emitted('save')).toBeUndefined()
+    })
+  })
+
   describe('when admin owner is missing', () => {
     test('should show validation error and skip save', async () => {
       const wrapper = mountNoteEditorDialog({
