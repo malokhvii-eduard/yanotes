@@ -41,10 +41,32 @@ const editorState = vi.hoisted(() => ({
   openEdit: vi.fn()
 }))
 
+const filtersState = vi.hoisted(() => ({
+  isDescending: true,
+  query: '',
+  searchQuery: '',
+  setSortField: vi.fn(),
+  sort: '-updated_at',
+  sortField: 'updated_at',
+  toggleDirection: vi.fn()
+}))
+
 const listState = vi.hoisted(() => ({
   fetchMoreOwners: vi.fn(),
+  hasMoreOwners: false,
+  isLoading: false,
+  isLoadingMore: false,
+  isLoadingMoreOwners: false,
+  loadError: null as string | null,
   notes: [] as typeof note[],
-  refresh: vi.fn()
+  owners: [],
+  refresh: vi.fn(),
+  showOwnerSelect: false,
+  total: 0
+}))
+
+const actionsError = vi.hoisted(() => ({
+  value: null as string | null
 }))
 
 vi.mock('vuetify/components', () => ({
@@ -77,16 +99,17 @@ vi.mock('vuetify/components', () => ({
     template: '<main><slot /></main>'
   },
   VIcon: {
-    template: '<span />'
+    props: ['icon'],
+    template: '<span class="v-icon">{{ icon }}</span>'
   },
   VMain: {
     template: '<section><slot /></section>'
   },
   VProgressCircular: {
-    template: '<span />'
+    template: '<span class="progress-circular" />'
   },
   VProgressLinear: {
-    template: '<span />'
+    template: '<span class="progress-linear" />'
   },
   VRow: {
     template: '<div><slot /></div>'
@@ -94,7 +117,11 @@ vi.mock('vuetify/components', () => ({
   VSelect: {
     emits: ['update:modelValue'],
     props: ['items', 'label', 'modelValue'],
-    template: '<select :aria-label="label" @change="$emit(\'update:modelValue\', $event.target.value)" />'
+    template: [
+      '<select :aria-label="label" @change="$emit(\'update:modelValue\', $event.target.value)">',
+      '<option v-for="item in items" :key="item.value" :value="item.value">{{ item.title }}</option>',
+      '</select>'
+    ].join('')
   },
   VSpacer: {
     template: '<span />'
@@ -157,7 +184,8 @@ vi.mock('vuetify/components/VGrid', () => ({
 
 vi.mock('vuetify/components/VIcon', () => ({
   VIcon: {
-    template: '<span />'
+    props: ['icon'],
+    template: '<span class="v-icon">{{ icon }}</span>'
   }
 }))
 
@@ -169,13 +197,13 @@ vi.mock('vuetify/components/VMain', () => ({
 
 vi.mock('vuetify/components/VProgressCircular', () => ({
   VProgressCircular: {
-    template: '<span />'
+    template: '<span class="progress-circular" />'
   }
 }))
 
 vi.mock('vuetify/components/VProgressLinear', () => ({
   VProgressLinear: {
-    template: '<span />'
+    template: '<span class="progress-linear" />'
   }
 }))
 
@@ -183,7 +211,11 @@ vi.mock('vuetify/components/VSelect', () => ({
   VSelect: {
     emits: ['update:modelValue'],
     props: ['items', 'label', 'modelValue'],
-    template: '<select :aria-label="label" @change="$emit(\'update:modelValue\', $event.target.value)" />'
+    template: [
+      '<select :aria-label="label" @change="$emit(\'update:modelValue\', $event.target.value)">',
+      '<option v-for="item in items" :key="item.value" :value="item.value">{{ item.title }}</option>',
+      '</select>'
+    ].join('')
   }
 }))
 
@@ -267,7 +299,7 @@ vi.mock('@/shared/ui/ConfirmDialog.vue', () => ({
 vi.mock('@/features/notes/composables/useActions', () => ({
   useActions: () => ({
     deleteCurrentNote: actionsState.deleteCurrentNote,
-    error: ref(null),
+    error: ref(actionsError.value),
     isLoading: ref(false),
     saveNote: actionsState.saveNote
   })
@@ -289,30 +321,30 @@ vi.mock('@/features/notes/composables/useEditor', () => ({
 
 vi.mock('@/features/notes/composables/useFilters', () => ({
   useFilters: () => ({
-    isDescending: ref(true),
-    query: ref(''),
-    searchQuery: ref(''),
-    setSortField: vi.fn(),
-    sort: ref('-updated_at'),
-    sortField: ref('updated_at'),
-    toggleDirection: vi.fn()
+    isDescending: ref(filtersState.isDescending),
+    query: ref(filtersState.query),
+    searchQuery: ref(filtersState.searchQuery),
+    setSortField: filtersState.setSortField,
+    sort: ref(filtersState.sort),
+    sortField: ref(filtersState.sortField),
+    toggleDirection: filtersState.toggleDirection
   })
 }))
 
 vi.mock('@/features/notes/composables/useList', () => ({
   useList: () => ({
     fetchMoreOwners: listState.fetchMoreOwners,
-    hasMoreOwners: ref(false),
-    isLoading: ref(false),
-    isLoadingMore: ref(false),
-    isLoadingMoreOwners: ref(false),
-    loadError: ref(null),
+    hasMoreOwners: ref(listState.hasMoreOwners),
+    isLoading: ref(listState.isLoading),
+    isLoadingMore: ref(listState.isLoadingMore),
+    isLoadingMoreOwners: ref(listState.isLoadingMoreOwners),
+    loadError: ref(listState.loadError),
     notes: ref(listState.notes),
-    owners: ref([]),
+    owners: ref(listState.owners),
     refresh: listState.refresh,
     setLoadMoreAnchor: vi.fn(),
-    showOwnerSelect: ref(false),
-    total: ref(0)
+    showOwnerSelect: ref(listState.showOwnerSelect),
+    total: ref(listState.total)
   })
 }))
 
@@ -323,7 +355,21 @@ function mountNotesView () {
 describe('NotesView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    actionsError.value = null
+    filtersState.isDescending = true
+    filtersState.query = ''
+    filtersState.searchQuery = ''
+    filtersState.sort = '-updated_at'
+    filtersState.sortField = 'updated_at'
+    listState.hasMoreOwners = false
+    listState.isLoading = false
+    listState.isLoadingMore = false
+    listState.isLoadingMoreOwners = false
+    listState.loadError = null
     listState.notes = []
+    listState.owners = []
+    listState.showOwnerSelect = false
+    listState.total = 0
   })
 
   describe('when logout button is clicked', () => {
@@ -370,6 +416,59 @@ describe('NotesView', () => {
       expect(listState.fetchMoreOwners).toHaveBeenCalledOnce()
       expect(actionsState.deleteCurrentNote).toHaveBeenCalledOnce()
       expect(editorState.openCreate).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('when sort controls are used', () => {
+    test('should forward sort field and direction changes', async () => {
+      filtersState.isDescending = false
+      const wrapper = mountNotesView()
+
+      await wrapper.find('select').setValue('title')
+      await wrapper.find('.notes-controls__direction').trigger('click')
+
+      expect(filtersState.setSortField).toHaveBeenCalledWith('title')
+      expect(filtersState.toggleDirection).toHaveBeenCalledOnce()
+      expect(wrapper.find('.notes-controls__direction').attributes('aria-label')).toBe('Ascending order')
+      expect(wrapper.find('.v-icon').text()).toBe('$sortAscending')
+    })
+  })
+
+  describe('when notes are loading', () => {
+    test('should show loading progress without empty state', () => {
+      listState.isLoading = true
+      const wrapper = mountNotesView()
+
+      expect(wrapper.find('.progress-linear').exists()).toBe(true)
+      expect(wrapper.find('.notes-empty').exists()).toBe(false)
+    })
+  })
+
+  describe('when loading more notes', () => {
+    test('should show incremental loading progress', () => {
+      listState.isLoadingMore = true
+      const wrapper = mountNotesView()
+
+      expect(wrapper.find('.progress-circular').exists()).toBe(true)
+    })
+  })
+
+  describe('when loading notes fails', () => {
+    test('should show list error message', () => {
+      listState.loadError = 'Could not load notes'
+      const wrapper = mountNotesView()
+
+      expect(wrapper.get('[role="alert"]').text()).toContain('Could not load notes')
+    })
+  })
+
+  describe('when note action fails', () => {
+    test('should prefer action error message', () => {
+      actionsError.value = 'Could not save note'
+      listState.loadError = 'Could not load notes'
+      const wrapper = mountNotesView()
+
+      expect(wrapper.get('[role="alert"]').text()).toContain('Could not save note')
     })
   })
 })
