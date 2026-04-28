@@ -87,10 +87,3 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm run test:coverage -- --reporter=verbose --includeTaskLocation
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v6
-        if: always()
-        with:
-          name: web-coverage-report
-          path: web/coverage
-          retention-days: 7
