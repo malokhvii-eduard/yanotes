@@ -57,6 +57,13 @@ vi.mock('vuetify/components', () => ({
       '  {{ item[itemTitle] }}',
       '</option>',
       '</select>',
+      '<span',
+      '  v-for="message in errorMessages || []"',
+      '  :key="message"',
+      '  class="field-error"',
+      '>',
+      '  {{ message }}',
+      '</span>',
       '<slot name="append-item" />',
       '</label>'
     ].join('')
@@ -88,6 +95,13 @@ vi.mock('vuetify/components', () => ({
       '  :value="modelValue"',
       '  @input="$emit(\'update:modelValue\', $event.target.value)"',
       '/>',
+      '<span',
+      '  v-for="message in errorMessages || []"',
+      '  :key="message"',
+      '  class="field-error"',
+      '>',
+      '  {{ message }}',
+      '</span>',
       '</label>'
     ].join('')
   }
@@ -180,6 +194,13 @@ vi.mock('vuetify/components/VSelect', () => ({
       '  {{ item[itemTitle] }}',
       '</option>',
       '</select>',
+      '<span',
+      '  v-for="message in errorMessages || []"',
+      '  :key="message"',
+      '  class="field-error"',
+      '>',
+      '  {{ message }}',
+      '</span>',
       '<slot name="append-item" />',
       '</label>'
     ].join('')
@@ -220,6 +241,13 @@ vi.mock('vuetify/components/VTextField', () => ({
       '  :value="modelValue"',
       '  @input="$emit(\'update:modelValue\', $event.target.value)"',
       '/>',
+      '<span',
+      '  v-for="message in errorMessages || []"',
+      '  :key="message"',
+      '  class="field-error"',
+      '>',
+      '  {{ message }}',
+      '</span>',
       '</label>'
     ].join('')
   }
@@ -298,6 +326,40 @@ describe('NoteEditorDialog', () => {
           }
         ])
       })
+    })
+  })
+
+  describe('when title is blank', () => {
+    test('should show validation error and skip save', async () => {
+      const wrapper = mountNoteEditorDialog()
+
+      await wrapper.find('input').setValue('   ')
+      await wrapper.find('textarea').setValue('Content')
+      await wrapper.find('.note-editor-dialog__submit').trigger('click')
+
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain('Title is required')
+      })
+      expect(wrapper.emitted('save')).toBeUndefined()
+    })
+  })
+
+  describe('when admin owner is missing', () => {
+    test('should show validation error and skip save', async () => {
+      const wrapper = mountNoteEditorDialog({
+        currentUserId: undefined,
+        owners,
+        showOwnerSelect: true
+      })
+
+      await wrapper.find('input').setValue('Admin note')
+      await wrapper.find('textarea').setValue('Content')
+      await wrapper.find('.note-editor-dialog__submit').trigger('click')
+
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain('Owner is required')
+      })
+      expect(wrapper.emitted('save')).toBeUndefined()
     })
   })
 
