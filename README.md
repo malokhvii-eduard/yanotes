@@ -131,4 +131,4 @@ Leave a star if you think this project is cool or useful for you.
 [vueuse]: https://vueuse.org/
 [vuetify]: https://vuetifyjs.com/
 [zod]: https://zod.dev/
-[pre-commit.ci]: https://results.pre-commit.ci/run/github/460832686/1679657165.dw92X6KgSrSmIH9bunUkLQ
+[pre-commit.ci]: https://results.pre-commit.ci/run/github/534330844/1777473893.CfweoDqrT6CC6A4PWs72EA

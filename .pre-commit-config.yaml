@@ -113,7 +113,7 @@ repos:
   # Commit checks
   - repo: local
     hooks:
-      - id: commitlint-local
+      - id: commitlint
         name: check commit message
         entry: npx --no -- commitlint --edit
         language: system
