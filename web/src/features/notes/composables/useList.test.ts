@@ -171,6 +171,7 @@ function createTestContext (
     canManageOwners,
     isEditorOpen,
     ownerId,
+    userId: ref(1),
     search: ref(options.search ?? ''),
     sort: ref(options.sort ?? '-updated_at')
   })

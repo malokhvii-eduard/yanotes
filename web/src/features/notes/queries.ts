@@ -27,11 +27,12 @@ async function invalidateNotesQueries (queryCache: ReturnType<typeof useQueryCac
 }
 
 export function useNotesInfiniteQuery (
+  userId: MaybeRefOrGetter<number | null | undefined>,
   sort: MaybeRefOrGetter<NoteSort>,
   search: MaybeRefOrGetter<string>
 ) {
   return useOffsetInfiniteQuery({
-    key: () => ['notes', toValue(sort), toValue(search)],
+    key: () => ['notes', toValue(userId) ?? null, toValue(sort), toValue(search)],
     pageSize: appEnv.notesPageSize,
     params: () => ({
       ordering: toValue(sort),

@@ -136,11 +136,11 @@ describe('notesInfiniteQuery', () => {
 
   describe('when sort and search filters are set', () => {
     test('should pass filters to query key and request params', () => {
-      useNotesInfiniteQuery('-title', 'release')
+      useNotesInfiniteQuery(7, '-title', 'release')
 
       const options = vi.mocked(useOffsetInfiniteQuery).mock.calls[0]?.[0]
 
-      expect(toValue(options?.key)).toEqual(['notes', '-title', 'release'])
+      expect(toValue(options?.key)).toEqual(['notes', 7, '-title', 'release'])
       expect(toValue(options?.params)).toEqual({
         ordering: '-title',
         search: 'release'
@@ -151,11 +151,11 @@ describe('notesInfiniteQuery', () => {
 
   describe('when search filter is empty', () => {
     test('should omit search from request params', () => {
-      useNotesInfiniteQuery('-updated_at', '')
+      useNotesInfiniteQuery(7, '-updated_at', '')
 
       const options = vi.mocked(useOffsetInfiniteQuery).mock.calls[0]?.[0]
 
-      expect(toValue(options?.key)).toEqual(['notes', '-updated_at', ''])
+      expect(toValue(options?.key)).toEqual(['notes', 7, '-updated_at', ''])
       expect(toValue(options?.params)).toEqual({
         ordering: '-updated_at',
         search: undefined

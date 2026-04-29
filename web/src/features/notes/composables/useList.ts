@@ -18,6 +18,7 @@ type UseListOptions = {
   canManageOwners: MaybeRefOrGetter<boolean>
   isEditorOpen: MaybeRefOrGetter<boolean>
   ownerId: MaybeRefOrGetter<number | undefined>
+  userId: MaybeRefOrGetter<number | null | undefined>
   search: MaybeRefOrGetter<string>
   sort: MaybeRefOrGetter<NoteSort>
 }
@@ -40,7 +41,7 @@ export function useList (options: UseListOptions) {
   const ownerId = computed(() => toValue(options.ownerId))
   const canLoadOwners = computed(() => isEditorOpen.value && canManageOwners.value)
 
-  const notesQuery = useNotesInfiniteQuery(options.sort, options.search)
+  const notesQuery = useNotesInfiniteQuery(options.userId, options.sort, options.search)
   const ownerQuery = useNoteOwnersInfiniteQuery(canLoadOwners)
   const selectedOwnerQuery = useNoteOwnerQuery(ownerId, computed(() => (
     canLoadOwners.value &&
