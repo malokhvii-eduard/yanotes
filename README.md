@@ -43,6 +43,18 @@
 - Containerized app stack with Traefik in front of the web client, API,
   PostgreSQL database, and Redis cache
 
+## 🚀 Quick Start
+
+Default environment values are already defined in `docker-compose.yml`, so you
+can start the app without creating an `.env` file.
+
+```sh
+docker compose up
+```
+
+Open <http://localhost> and sign in as `admin:admin`. API docs are available at
+<http://localhost/api/docs/>.
+
 ## 🛠️ Tech Stack
 
 <!-- markdownlint-disable MD013 -->
