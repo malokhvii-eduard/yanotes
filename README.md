@@ -14,9 +14,9 @@
 
 [![License](https://img.shields.io/badge/license-MIT-3178C6)][license]
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen)][github-pre-commit]
+[![pre-commit.ci](https://results.pre-commit.ci/badge/github/malokhvii-eduard/yanotes/master.svg)][pre-commit.ci]
 [![Commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen)][github-commitizen]
 [![Code Style](https://img.shields.io/badge/code%20style-ruff%20%2B%20eslint-D7FF64)][ruff]
-[![pre-commit.ci](https://results.pre-commit.ci/badge/github/malokhvii-eduard/yanotes/master.svg)][pre-commit.ci]
 [![CI Workflow](https://github.com/malokhvii-eduard/yanotes/actions/workflows/ci.yml/badge.svg)](https://github.com/malokhvii-eduard/yanotes/actions/workflows/ci.yml)
 
   </p>
