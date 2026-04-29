@@ -70,6 +70,7 @@ repos:
         name: check executables have shebangs
       - id: check-added-large-files
         name: check added large files
+        exclude: ^docs/img/demo\.gif$
       - id: debug-statements
         name: check debug statements
 
