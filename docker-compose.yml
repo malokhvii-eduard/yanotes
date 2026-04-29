@@ -6,17 +6,17 @@ x-api-environment: &api-environment
   ACCESS_TOKEN_LIFETIME: ${ACCESS_TOKEN_LIFETIME-5}  # Minutes
   CACHE_HOST: cache
   DB_HOST: "${DB_HOST-db}"
-  DB_NAME: "${DB_NAME?}"
-  DB_PASSWORD: "${DB_PASSWORD?}"
+  DB_NAME: "${DB_NAME-yanotes}"
+  DB_PASSWORD: "${DB_PASSWORD-Gcv4Mg3YJ9v5ASy}"
   DB_PORT: "${DB_PORT-5432}"
-  DB_USER: "${DB_USER?}"
+  DB_USER: "${DB_USER-postgres}"
   DEBUG: "${DEBUG-false}"
   PAGE_SIZE: "${PAGE_SIZE-50}"
   REFRESH_TOKEN_LIFETIME: "${REFRESH_TOKEN_LIFETIME-60}"  # Days
   SECRET_KEY: "${SECRET_KEY?}"
-  SUPERUSER_EMAIL: "${SUPERUSER_EMAIL?}"
-  SUPERUSER_PASSWORD: "${SUPERUSER_PASSWORD?}"
-  SUPERUSER_USERNAME: "${SUPERUSER_USERNAME?}"
+  SUPERUSER_EMAIL: "${SUPERUSER_EMAIL-admin@example.com}"
+  SUPERUSER_PASSWORD: "${SUPERUSER_PASSWORD-admin}"
+  SUPERUSER_USERNAME: "${SUPERUSER_USERNAME-admin}"
   TIME_ZONE: "${TIME_ZONE-UTC}"
 
 services:
@@ -108,9 +108,9 @@ services:
     <<: *common
     image: "postgres:${POSTGRES_VERSION-14.19-alpine}"
     environment:
-      POSTGRES_DB: "${DB_NAME?}"
-      POSTGRES_USER: "${DB_USER?}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD?}"
+      POSTGRES_DB: "${DB_NAME-yanotes}"
+      POSTGRES_USER: "${DB_USER-postgres}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD-Gcv4Mg3YJ9v5ASy}"
     ports:
       - "5432:5432/tcp"
     volumes:
